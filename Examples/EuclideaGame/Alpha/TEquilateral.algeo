@@ -1,0 +1,105 @@
+definitions:
+  - id: A
+    factory: Point.create
+    args:
+      x: -3
+      y: 0
+  - id: B
+    factory: Point.create
+    args:
+      x: 3
+      y: 0
+  - id: AB
+    factory: Segment.fromPoints
+    references:
+      p1: A
+      p2: B
+  - id: a
+    factory: Circle.create
+    references:
+      c: A
+      p: B
+  - id: C
+    factory: Point.fromIntersection
+    args:
+      index: 1
+    references:
+      a: AB
+      b: a
+  - id: b
+    factory: Circle.create
+    references:
+      c: C
+      p: A
+  - id: D
+    factory: Point.fromIntersection
+    args:
+      index: 1
+    references:
+      a: b
+      b: a
+  - id: BD
+    factory: Segment.fromPoints
+    references:
+      p1: B
+      p2: D
+  - id: DA
+    factory: Segment.fromPoints
+    references:
+      p1: D
+      p2: A
+  - id: c
+    factory: Polygon.fromPoints
+    references:
+      points:
+        - A
+        - B
+        - D
+  - id: E
+    factory: Point.fromIntersection
+    args:
+      index: 2
+    references:
+      a: b
+      b: a
+  - id: AE
+    factory: Segment.fromPoints
+    references:
+      p1: A
+      p2: E
+  - id: EB
+    factory: Segment.fromPoints
+    references:
+      p1: E
+      p2: B
+  - id: d
+    factory: Polygon.fromPoints
+    references:
+      points:
+        - A
+        - E
+        - B
+    style:
+      fillStyle: rgba(191, 192, 21, 0.2)
+backgroundStyle:
+  backgroundColor: "#f5f5f5"
+  xaxis:
+    show: false
+    tick: true
+    label: true
+    distanceMode: auto
+    distance: 1
+  yaxis:
+    show: false
+    tick: true
+    label: true
+    distanceMode: auto
+    distance: 1
+  axisColor: "#999999"
+  grid:
+    show: false
+    color: "#c0c0c0"
+    capturingMode: snap
+messages: []
+metadata:
+  version: "1"
