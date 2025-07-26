@@ -5,7 +5,6 @@ namespace Euclid
 
   /--
     三角形
-    TODO: 需要证明三点不共线
   -/
   structure Triangle where
     a: Point
