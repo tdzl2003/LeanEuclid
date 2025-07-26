@@ -26,12 +26,17 @@ namespace Euclid
     /--
       交换顶点顺序仍表示同一三角形
     -/
-    axiom eq_reorder_ac: △a:b:c h1 = △c:b:a h2
+    axiom eq_reorder_ab: △a:b:c h1 = △b:a:c h2
 
     /--
       交换顶点顺序仍表示同一三角形
     -/
-    axiom eq_reorder_ab: △a:b:c h1 = △b:a:c h2
+    theorem eq_reorder_ac: △a:b:c h1 = △c:b:a h2 := by
+      rw [eq_reorder_ab, eq_reorder_bc, eq_reorder_ab]
+      . rw [Point.on_same_line.comm_left]
+        exact h2
+      . rw [Point.on_same_line.comm_left]
+        exact h1
 
   end Triangle
 

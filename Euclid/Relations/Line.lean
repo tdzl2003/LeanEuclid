@@ -16,6 +16,27 @@ namespace Euclid
     def on_same_line(p1 p2 p3: Point): Prop :=
       ∃ l: Line, p1.on_line l ∧ p2.on_line l ∧ p3.on_line l
 
+    namespace on_same_line
+      theorem comm_left{p1 p2 p3: Point}:
+        on_same_line p1 p2 p3 ↔ on_same_line p2 p1 p3 := by
+        constructor
+        all_goals {
+          intro ⟨l, hl⟩
+          use l
+          exact ⟨hl.2.1, hl.1, hl.2.2⟩
+        }
+
+      theorem comm_right{p1 p2 p3: Point}:
+        on_same_line p1 p2 p3 ↔ on_same_line p1 p3 p2 := by
+        constructor
+        all_goals {
+          intro ⟨l, hl⟩
+          use l
+          exact ⟨hl.1, hl.2.2, hl.2.1⟩
+        }
+
+    end on_same_line
+
     /--
       命题：点p在ab之间
     -/
