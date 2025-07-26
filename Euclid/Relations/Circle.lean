@@ -1,4 +1,4 @@
-import Euclid.Sorts.Point
+import Euclid.Sorts.Primitives
 import Euclid.Sorts.Circle
 import Euclid.Relations.Point
 import Mathlib.Logic.ExistsUnique

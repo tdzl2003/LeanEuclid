@@ -1,5 +1,5 @@
 import Euclid.Sorts.Circle
-import Euclid.Sorts.Point
+import Euclid.Sorts.Primitives
 import Euclid.Relations.Circle
 import Mathlib.Data.Set.Basic
 import Mathlib.Data.Set.Card

@@ -1,5 +1,6 @@
 import Mathlib.Data.Real.Basic
-import Euclid.Sorts.Point
+import Euclid.Sorts.Primitives
+import Euclid.Relations.Point
 
 namespace Euclid
   /--

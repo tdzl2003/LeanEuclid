@@ -1,5 +1,9 @@
 
 namespace Euclid
+  /--
+    点
+  -/
+  axiom Point : Type
 
   /--
     直线

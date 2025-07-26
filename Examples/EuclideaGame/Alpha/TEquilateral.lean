@@ -31,9 +31,32 @@ namespace EuclideaGame.Alpha.TEquilateral
   noncomputable def p1 := c1_intersect_c2.p1
   noncomputable def p2 := c1_intersect_c2.p2
 
-  -- TODO: 证明 △A:B:p1 和 △A:B:p2 是正三角形
-  noncomputable def t1 := △A:B:p1 (⟨s.distinct_endpoints, sorry⟩)
+  -- 构建三角形的必要条件
+  theorem hp1: B ≠ p1 ∧ p1 ≠ A := by
+    constructor
+    . have h1: p1.on_circle c2 := c1_intersect_c2.p1_on_circle.2
+      rw [show B = c2.center by simp [c2]]
+      apply Ne.symm
+      apply h1.ne_center
+    . have h1: p1.on_circle c1 := c1_intersect_c2.p1_on_circle.1
+      rw [show A = c1.center by simp [c1]]
+      apply h1.ne_center
 
+  theorem hp2: B ≠ p2 ∧ p2 ≠ A := by
+    constructor
+    . have h1: p2.on_circle c2 := c1_intersect_c2.p2_on_circle.2
+      rw [show B = c2.center by simp [c2]]
+      apply Ne.symm
+      apply h1.ne_center
+    . have h1: p2.on_circle c1 := c1_intersect_c2.p2_on_circle.1
+      rw [show A = c1.center by simp [c1]]
+      apply h1.ne_center
+
+  -- 构建两个三角形
+  noncomputable def t1 := △A:B:p1 (⟨s.distinct_endpoints, hp1⟩)
+  noncomputable def t2 := △A:B:p2 (⟨s.distinct_endpoints, hp2⟩)
+
+  -- TODO: 证明 △A:B:p1 和 △A:B:p2 是正三角形
   -- TODO：证明不存在其他的 以A-B为一条边的正三角形
 
 

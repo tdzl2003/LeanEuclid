@@ -1,4 +1,5 @@
 import Euclid.Sorts.Triangle
+import Euclid.Relations.Point
 
 
 namespace Euclid
