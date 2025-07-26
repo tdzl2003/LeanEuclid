@@ -5,9 +5,9 @@ import Mathlib.Data.Real.Basic
 namespace Euclid
   namespace Point
     /--
-      两点间的距离
+      两点间的距离，等同于它们唯一确定的线段的长度
     -/
-    axiom distance(p1 p2: Point) : Real
+    opaque distance(p1 p2: Point) : Real
 
     namespace distance
       /--

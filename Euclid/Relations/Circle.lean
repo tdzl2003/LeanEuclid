@@ -13,13 +13,13 @@ namespace Euclid
       命题：点在圆的内部
     -/
     def in_circle (p: Point)(c: Circle): Prop :=
-      p.distance c.center < c.radius
+      c.center.distance p < c.radius
 
     /--
       命题：点在圆上
     -/
     def on_circle (p: Point)(c: Circle): Prop :=
-      p.distance c.center = c.radius
+      c.center.distance p = c.radius
 
     namespace on_circle
       variable {p: Point}{c: Circle}
@@ -29,6 +29,7 @@ namespace Euclid
       -/
       theorem ne_center(h: on_circle p c) : p ≠ c.center := by
         apply (distance_gt_zero_iff p c.center).mpr
+        rw [distance.symm]
         rw [h]
         exact c.radius_pos
 
@@ -55,5 +56,10 @@ namespace Euclid
     def nonintersect_circle(c1 c2: Circle): Prop :=
       ¬ ∃ p: Point, p.on_circle c1 ∧ p.on_circle c2
   end Circle
+
+  def distance_eq_iff_on_same_circle(c: Circle)(p1 p2: Point)(hp1: p1.on_circle c)(hp2: p2.on_circle c):
+    c.center.distance p1 = c.center.distance p2 := by
+    unfold Point.on_circle at hp1 hp2
+    rw [hp1, hp2]
 
 end Euclid

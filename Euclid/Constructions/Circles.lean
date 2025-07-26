@@ -1,6 +1,7 @@
 import Euclid.Sorts.Primitives
 import Euclid.Sorts.Circle
 import Euclid.Relations.Point
+import Euclid.Relations.Circle
 
 namespace Euclid
 
@@ -18,5 +19,8 @@ namespace Euclid
 
   end Circle
 
+  theorem point_on_mk_circle(center p: Point)(distinct: center ≠ p): p.on_circle <| Circle.mk_from_points center p distinct := by
+    unfold Circle.mk_from_points Point.on_circle
+    simp only
 
 end Euclid

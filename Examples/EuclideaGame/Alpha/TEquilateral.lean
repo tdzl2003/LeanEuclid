@@ -31,30 +31,49 @@ namespace EuclideaGame.Alpha.TEquilateral
   noncomputable def p1 := c1_intersect_c2.p1
   noncomputable def p2 := c1_intersect_c2.p2
 
-  -- 构建三角形的必要条件
-  theorem hp1: B ≠ p1 ∧ p1 ≠ A := by
-    constructor
-    . have h1: p1.on_circle c2 := c1_intersect_c2.p1_on_circle.2
-      rw [show B = c2.center by simp [c2]]
-      apply Ne.symm
-      apply h1.ne_center
-    . have h1: p1.on_circle c1 := c1_intersect_c2.p1_on_circle.1
-      rw [show A = c1.center by simp [c1]]
-      apply h1.ne_center
+  -- 构建三角形的必要条件：三点不共线
+  theorem hp{p: Point}(hp: p.on_circle c1 ∧ p.on_circle c2):
+      ¬Point.on_same_line A B p := by
+    intro h
+    have eq1: A.distance p = A.distance B := by
+      rw [show A = c1.center by unfold c1 Circle.mk_from_points;simp only]
+      apply distance_eq_iff_on_same_circle
+      exact hp.1
+      apply point_on_mk_circle
 
-  theorem hp2: B ≠ p2 ∧ p2 ≠ A := by
-    constructor
-    . have h1: p2.on_circle c2 := c1_intersect_c2.p2_on_circle.2
-      rw [show B = c2.center by simp [c2]]
-      apply Ne.symm
-      apply h1.ne_center
-    . have h1: p2.on_circle c1 := c1_intersect_c2.p2_on_circle.1
-      rw [show A = c1.center by simp [c1]]
-      apply h1.ne_center
+    have eq2: B.distance p = A.distance B := by
+      rw [Point.distance.symm A]
+      rw [show B = c2.center by unfold c2 Circle.mk_from_points;simp only]
+      apply distance_eq_iff_on_same_circle
+      exact hp.2
+      apply point_on_mk_circle
+
+    have h2: A.distance B > 0 := by
+      apply (Point.distance_gt_zero_iff A B).mp
+      exact s.distinct_endpoints
+
+    rcases h.between_cases with h1|h1|h1
+    all_goals {
+      have h1':= h1.distance
+      repeat rw [Point.distance.symm p] at h1'
+      try rw [eq1] at h1'
+      try rw [eq2] at h1'
+      try rw [Point.distance.symm B] at h1'
+      have : A.distance B + A.distance B > A.distance B := by
+        apply lt_add_of_pos_right
+        exact h2
+      apply ne_of_lt this
+      apply Eq.symm
+      exact h1'
+    }
+
+  theorem hp1: ¬Point.on_same_line A B p1 := hp c1_intersect_c2.p1_on_circle
+
+  theorem hp2: ¬Point.on_same_line A B p2 := hp c1_intersect_c2.p2_on_circle
 
   -- 构建两个三角形
-  noncomputable def t1 := △A:B:p1 (⟨s.distinct_endpoints, hp1⟩)
-  noncomputable def t2 := △A:B:p2 (⟨s.distinct_endpoints, hp2⟩)
+  noncomputable def t1 := △A:B:p1 hp1
+  noncomputable def t2 := △A:B:p2 hp2
 
   -- TODO: 证明 △A:B:p1 和 △A:B:p2 是正三角形
   -- TODO：证明不存在其他的 以A-B为一条边的正三角形

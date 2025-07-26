@@ -1,4 +1,5 @@
 import Euclid.Sorts.Primitives
+import Euclid.Relations.Line
 
 namespace Euclid
 
@@ -10,7 +11,7 @@ namespace Euclid
     a: Point
     b: Point
     c: Point
-    h: a≠b ∧ b≠c ∧ c≠a
+    h: ¬ Point.on_same_line a b c
 
   notation:max "△" a ":" b ":" c:max => Triangle.mk a b c
 
