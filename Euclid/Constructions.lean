@@ -1,2 +1,2 @@
-import Euclid.Constructions.Points
+import Euclid.Constructions.Points_from_circle
 import Euclid.Constructions.Circles

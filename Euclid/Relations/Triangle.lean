@@ -10,7 +10,6 @@ namespace Euclid
     -/
     def is_regular(t: Triangle) : Prop :=
       t.a.distance t.b = t.b.distance t.c ∧ t.b.distance t.c = t.c.distance t.a
-
   end Triangle
 
   /--

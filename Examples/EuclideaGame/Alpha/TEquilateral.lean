@@ -1,4 +1,7 @@
 import Euclid
+import Mathlib
+
+#check Rat.eq_iff_mul_eq_mul
 
 open Euclid
 
@@ -31,22 +34,25 @@ namespace EuclideaGame.Alpha.TEquilateral
   noncomputable def p1 := c1_intersect_c2.p1
   noncomputable def p2 := c1_intersect_c2.p2
 
-  -- 构建三角形的必要条件：三点不共线
-  theorem hp{p: Point}(hp: p.on_circle c1 ∧ p.on_circle c2):
-      ¬Point.on_same_line A B p := by
-    intro h
-    have eq1: A.distance p = A.distance B := by
-      rw [show A = c1.center by unfold c1 Circle.mk_from_points;simp only]
+  -- 两圆交点和A、B等距离
+  theorem p_distance_eq{p: Point}(hp: p.on_circle c1 ∧ p.on_circle c2):
+    A.distance p = A.distance B ∧ B.distance p = A.distance B := by
+    constructor
+    . rw [show A = c1.center by unfold c1 Circle.mk_from_points;simp only]
       apply distance_eq_iff_on_same_circle
       exact hp.1
       apply point_on_mk_circle
-
-    have eq2: B.distance p = A.distance B := by
-      rw [Point.distance.symm A]
+    . rw [Point.distance.symm A]
       rw [show B = c2.center by unfold c2 Circle.mk_from_points;simp only]
       apply distance_eq_iff_on_same_circle
       exact hp.2
       apply point_on_mk_circle
+
+  -- 构建三角形的必要条件：三点不共线
+  theorem hp{p: Point}(hp: p.on_circle c1 ∧ p.on_circle c2):
+      ¬Point.on_same_line A B p := by
+    intro h
+    have ⟨eq1, eq2⟩ := p_distance_eq hp
 
     have h2: A.distance B > 0 := by
       apply (Point.distance_gt_zero_iff A B).mp
@@ -75,8 +81,93 @@ namespace EuclideaGame.Alpha.TEquilateral
   noncomputable def t1 := △A:B:p1 hp1
   noncomputable def t2 := △A:B:p2 hp2
 
-  -- TODO: 证明 △A:B:p1 和 △A:B:p2 是正三角形
-  -- TODO：证明不存在其他的 以A-B为一条边的正三角形
+  -- 证明 △A:B:p1 和 △A:B:p2 是正三角形
+  theorem ht1: t1.is_regular := by
+    unfold t1 Triangle.is_regular
+    simp only
+    have ⟨eq1, eq2⟩ := p_distance_eq c1_intersect_c2.p1_on_circle
+    rw [show c1_intersect_c2.p1 = p1 by unfold p1; rfl] at eq1 eq2
+    constructor
+    . apply Eq.symm
+      exact eq2
+    . rw [Point.distance.symm p1]
+      rw [eq1]
+      exact eq2
 
+  theorem ht2: t2.is_regular := by
+    unfold t2 Triangle.is_regular
+    simp only
+    have ⟨eq1, eq2⟩ := p_distance_eq c1_intersect_c2.p2_on_circle
+    rw [show c1_intersect_c2.p2 = p2 by unfold p2; rfl] at eq1 eq2
+    constructor
+    . apply Eq.symm
+      exact eq2
+    . rw [Point.distance.symm p2]
+      rw [eq1]
+      exact eq2
+
+  -- 证明不存在其他的 以A-B为一条边的正三角形
+  theorem is_t1_or_t2{t: Triangle}
+    (h1: t.is_regular)
+    (h2: A.is_triangle_vertex t ∧ B.is_triangle_vertex t):
+    t = t1 ∨ t = t2 := by
+
+    -- 不失一般性，假设t的前两个点分别是A, B 来进行证明
+    have lem{t: Triangle}
+      (h1: t.is_regular)
+      (h2: t.a = A ∧ t.b = B) :
+      t = t1 ∨ t = t2 := by
+
+      -- 证明：最后一个顶点一定是p1或p2
+      have hc: t.c = p1 ∨ t.c = p2 := by
+        apply Circle.intersect_circle.is_p1_or_p2
+        unfold Point.on_circle c1 c2
+        simp only [Circle.mk_from_points]
+        unfold Triangle.is_regular at h1
+        rw [← h2.1, ← h2.2]
+        constructor
+        . rw [h1.1, Point.distance.symm t.a]
+          rw [h1.2]
+        . rw [← h1.1]
+          rw [Point.distance.symm t.a]
+
+      rcases hc with hc|hc
+      . apply Or.inl
+        unfold t1
+        rw [Triangle.mk.injEq]
+        simp only [h2, hc, and_self]
+      . apply Or.inr
+        unfold t2
+        rw [Triangle.mk.injEq]
+        simp only [h2, hc, and_self]
+
+    have ⟨t', ht'⟩ := Triangle.choose_two_vertices s.distinct_endpoints h2
+    rw [← ht'.1]
+    have h1': t'.is_regular := by
+      rw [ht'.1]
+      exact h1
+    exact lem h1' ht'.2
+
+  -- 最终结果：{t1,t2} 即为本问题的解集
+  theorem final_answer:
+    {t: Triangle | t.is_regular ∧ A.is_triangle_vertex t ∧ B.is_triangle_vertex t} = {t1,t2} := by
+    apply Set.ext
+    intro x
+    simp only [Set.mem_setOf_eq, Set.mem_insert_iff, Set.mem_singleton_iff]
+    constructor
+    . intro h
+      apply is_t1_or_t2 h.1 h.2
+    . intro h
+      rcases h with h1|h1
+      . rw [h1]
+        constructor
+        . exact ht1
+        . unfold t1 Point.is_triangle_vertex
+          simp only [true_or, or_true, and_self]
+      . rw [h1]
+        constructor
+        . exact ht2
+        . unfold t2 Point.is_triangle_vertex
+          simp only [true_or, or_true, and_self]
 
 end EuclideaGame.Alpha.TEquilateral
