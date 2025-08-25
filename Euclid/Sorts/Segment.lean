@@ -13,13 +13,6 @@ namespace Euclid
 
   open Lean
 
-  syntax "(" term "─" term ")": term
-
-  macro_rules
-  | `(($t:term ─ $s:term)) => `(Segment.mk $t $s)
-
-
-
   namespace Segment
 
     /--
@@ -28,11 +21,6 @@ namespace Euclid
     noncomputable def length (s: Segment): ℝ := s.p1.distance s.p2
 
     variable {a b : Point}
-
-    /--
-      交换端点认为是同一个线段
-    -/
-    axiom eq_reorder : (a─b) h1 = (b─a) h2
 
   end Segment
 

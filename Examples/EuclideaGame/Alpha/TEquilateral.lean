@@ -1,8 +1,6 @@
 import Euclid
 import Mathlib
 
-#check Rat.eq_iff_mul_eq_mul
-
 open Euclid
 
 namespace EuclideaGame.Alpha.TEquilateral
@@ -78,12 +76,12 @@ namespace EuclideaGame.Alpha.TEquilateral
   theorem hp2: ¬Point.on_same_line A B p2 := hp c1_intersect_c2.p2_on_circle
 
   -- 构建两个三角形
-  noncomputable def t1 := △A:B:p1 hp1
-  noncomputable def t2 := △A:B:p2 hp2
+  noncomputable def t1 := Triangle.mk A B p1 hp1
+  noncomputable def t2 := Triangle.mk A B p2 hp2
 
   -- 证明 △A:B:p1 和 △A:B:p2 是正三角形
-  theorem ht1: t1.is_regular := by
-    unfold t1 Triangle.is_regular
+  theorem ht1: t1.IsRegular := by
+    unfold t1 Triangle.IsRegular
     simp only
     have ⟨eq1, eq2⟩ := p_distance_eq c1_intersect_c2.p1_on_circle
     rw [show c1_intersect_c2.p1 = p1 by unfold p1; rfl] at eq1 eq2
@@ -94,8 +92,8 @@ namespace EuclideaGame.Alpha.TEquilateral
       rw [eq1]
       exact eq2
 
-  theorem ht2: t2.is_regular := by
-    unfold t2 Triangle.is_regular
+  theorem ht2: t2.IsRegular := by
+    unfold t2 Triangle.IsRegular
     simp only
     have ⟨eq1, eq2⟩ := p_distance_eq c1_intersect_c2.p2_on_circle
     rw [show c1_intersect_c2.p2 = p2 by unfold p2; rfl] at eq1 eq2
@@ -108,49 +106,37 @@ namespace EuclideaGame.Alpha.TEquilateral
 
   -- 证明不存在其他的 以A-B为一条边的正三角形
   theorem is_t1_or_t2{t: Triangle}
-    (h1: t.is_regular)
-    (h2: A.is_triangle_vertex t ∧ B.is_triangle_vertex t):
+    (h1: t.IsRegular)
+    (h2: t.a = A ∧ t.b = B) :
     t = t1 ∨ t = t2 := by
 
-    -- 不失一般性，假设t的前两个点分别是A, B 来进行证明
-    have lem{t: Triangle}
-      (h1: t.is_regular)
-      (h2: t.a = A ∧ t.b = B) :
-      t = t1 ∨ t = t2 := by
+    -- 证明：最后一个顶点一定是p1或p2
+    have hc: t.c = p1 ∨ t.c = p2 := by
+      apply Circle.intersect_circle.is_p1_or_p2
+      unfold Point.on_circle c1 c2
+      simp only [Circle.mk_from_points]
+      unfold Triangle.IsRegular at h1
+      rw [← h2.1, ← h2.2]
+      constructor
+      . rw [h1.1, Point.distance.symm t.a]
+        rw [h1.2]
+      . rw [← h1.1]
+        rw [Point.distance.symm t.a]
 
-      -- 证明：最后一个顶点一定是p1或p2
-      have hc: t.c = p1 ∨ t.c = p2 := by
-        apply Circle.intersect_circle.is_p1_or_p2
-        unfold Point.on_circle c1 c2
-        simp only [Circle.mk_from_points]
-        unfold Triangle.is_regular at h1
-        rw [← h2.1, ← h2.2]
-        constructor
-        . rw [h1.1, Point.distance.symm t.a]
-          rw [h1.2]
-        . rw [← h1.1]
-          rw [Point.distance.symm t.a]
+    rcases hc with hc|hc
+    . apply Or.inl
+      unfold t1
+      rw [Triangle.mk.injEq]
+      simp only [h2, hc, and_self]
+    . apply Or.inr
+      unfold t2
+      rw [Triangle.mk.injEq]
+      simp only [h2, hc, and_self]
 
-      rcases hc with hc|hc
-      . apply Or.inl
-        unfold t1
-        rw [Triangle.mk.injEq]
-        simp only [h2, hc, and_self]
-      . apply Or.inr
-        unfold t2
-        rw [Triangle.mk.injEq]
-        simp only [h2, hc, and_self]
-
-    have ⟨t', ht'⟩ := Triangle.choose_two_vertices s.distinct_endpoints h2
-    rw [← ht'.1]
-    have h1': t'.is_regular := by
-      rw [ht'.1]
-      exact h1
-    exact lem h1' ht'.2
 
   -- 最终结果：{t1,t2} 即为本问题的解集
   theorem final_answer:
-    {t: Triangle | t.is_regular ∧ A.is_triangle_vertex t ∧ B.is_triangle_vertex t} = {t1,t2} := by
+    {t: Triangle | t.IsRegular ∧ t.a=A ∧ t.b=B} = {t1,t2} := by
     apply Set.ext
     intro x
     simp only [Set.mem_setOf_eq, Set.mem_insert_iff, Set.mem_singleton_iff]
@@ -162,12 +148,10 @@ namespace EuclideaGame.Alpha.TEquilateral
       . rw [h1]
         constructor
         . exact ht1
-        . unfold t1 Point.is_triangle_vertex
-          simp only [true_or, or_true, and_self]
+        . simp only [t1, and_self]
       . rw [h1]
         constructor
         . exact ht2
-        . unfold t2 Point.is_triangle_vertex
-          simp only [true_or, or_true, and_self]
+        . simp only [t2, and_self]
 
 end EuclideaGame.Alpha.TEquilateral

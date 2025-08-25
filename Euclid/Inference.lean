@@ -1,1 +1,0 @@
-import Euclid.Inference.Triangle
