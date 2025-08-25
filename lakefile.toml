@@ -1,9 +1,9 @@
-name = "euclid"
+name = "geometry"
 version = "0.1.0"
-defaultTargets = ["Euclid"]
+defaultTargets = ["Geometry"]
 
 [[lean_lib]]
-name = "Euclid"
+name = "Geometry"
 
 [[require]]
 name = "mathlib"
