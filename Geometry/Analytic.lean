@@ -95,7 +95,7 @@ namespace Geometry.Analytic
   theorem extension_exists(a c: Point): a ≠ c → ∃ d: Point, Between a c d := by
     sorry
 
-  noncomputable instance: HilbertGeometry2D Point where
+  noncomputable instance: HilbertAxioms2D Point where
     Line := Line
     LiesOn := LiesOn
     Between := Between

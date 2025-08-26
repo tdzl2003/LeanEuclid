@@ -3,7 +3,7 @@
 namespace Geometry
 
 /-- Hilbert geometry definition, reference: https://www.gutenberg.org/files/17384/17384-pdf.pdf -/
-class HilbertGeometry2D(Point: Type) where
+class HilbertAxioms2D(Point: Type) where
   Line: Type
 
   /-- LiesOn: a is on the l -/

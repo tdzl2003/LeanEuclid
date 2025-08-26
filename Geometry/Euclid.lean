@@ -31,7 +31,7 @@ namespace Geometry.Euclid
   /-- axiom II.2.2 If A and C are two points of a straight line, at least one point D so situated that C lies Between A and D.-/
   axiom extension_exists(a c: Point): a ≠ c → ∃ d: Point, Between a c d
 
-  noncomputable instance: HilbertGeometry2D Point where
+  noncomputable instance: HilbertAxioms2D Point where
     Line := Line
     LiesOn := LiesOn
     Between := Between
