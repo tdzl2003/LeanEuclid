@@ -25,7 +25,14 @@ namespace Geometry.Euclid
   /-- axiom I.7.2: in every plane at least three points not lying in the same straight line,-/
   axiom exists_three_point_not_on_same_line: ∃ a b c: Point, a≠b ∧ b≠c ∧ a≠c ∧ ¬∃ l: Line, LiesOn a l ∧ LiesOn b l ∧ LiesOn c l
 
-  noncomputable instance: HilbertGeometry2D Point Line where
+  /-- axiom II.1: If A, B, C are points of a straight line and B lies Between A and C, then B lies also Between C and A.-/
+  axiom between_symm(a b c: Point): Between a b c → Between c b a
+
+  /-- axiom II.2.2 If A and C are two points of a straight line, at least one point D so situated that C lies Between A and D.-/
+  axiom extension_exists(a c: Point): a ≠ c → ∃ d: Point, Between a c d
+
+  noncomputable instance: HilbertGeometry2D Point where
+    Line := Line
     LiesOn := LiesOn
     Between := Between
     mk_line_from_points := mk_line_from_points
@@ -33,5 +40,7 @@ namespace Geometry.Euclid
     unique_line_from_two_points := unique_line_from_two_points
     line_exists_two_points := line_exists_two_points
     exists_three_point_not_on_same_line := exists_three_point_not_on_same_line
+    between_symm := between_symm
+    extension_exists := extension_exists
 
 end Geometry.Euclid

@@ -1,7 +1,11 @@
 
 
+namespace Geometry
+
 /-- Hilbert geometry definition, reference: https://www.gutenberg.org/files/17384/17384-pdf.pdf -/
-class HilbertGeometry2D(Point Line: Type) where
+class HilbertGeometry2D(Point: Type) where
+  Line: Type
+
   /-- LiesOn: a is on the l -/
   LiesOn(a: Point)(l: Line): Prop
   /-- Between : b is Between a and c -/
@@ -29,3 +33,6 @@ class HilbertGeometry2D(Point Line: Type) where
 
   /-- axiom II.2.2 If A and C are two points of a straight line, at least one point D so situated that C lies Between A and D.-/
   extension_exists(a c: Point): a ≠ c → ∃ d: Point, Between a c d
+
+
+end Geometry

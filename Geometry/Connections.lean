@@ -1,8 +1,10 @@
 import Geometry.Basic
 import Mathlib.Tactic.ByContra
 
-namespace HilbertGeometry2D
-  variable {Point Line: Type} [HilbertGeometry2D Point Line]
+namespace Geometry.HilbertGeometry2D
+  variable {Point: Type} [HilbertGeometry2D Point]
+
+  local notation "Line" => HilbertGeometry2D.Line Point
 
   /-- Another way to express Axiom I.2: that is, if AB = a and AC = a, where B ̸= C, then is also BC = a.  -/
   theorem line_bc_eq_of_ab_and_ac_eq (a b c: Point)(l: Line): b ≠ c →
@@ -27,4 +29,4 @@ namespace HilbertGeometry2D
         rw [t1, t2]
       exact absurd this h
 
-end HilbertGeometry2D
+end Geometry.HilbertGeometry2D

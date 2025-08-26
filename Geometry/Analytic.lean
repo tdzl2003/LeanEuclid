@@ -87,7 +87,16 @@ namespace Geometry.Analytic
     ∃ a b c: Point, a≠b ∧ b≠c ∧ a≠c ∧ ¬∃ l: Line, LiesOn a l ∧ LiesOn b l ∧ LiesOn c l := by
       sorry
 
-  noncomputable instance: HilbertGeometry2D Point Line where
+  /-- axiom II.1: If A, B, C are points of a straight line and B lies Between A and C, then B lies also Between C and A.-/
+  theorem between_symm(a b c: Point): Between a b c → Between c b a := by
+    sorry
+
+  /-- axiom II.2.2 If A and C are two points of a straight line, at least one point D so situated that C lies Between A and D.-/
+  theorem extension_exists(a c: Point): a ≠ c → ∃ d: Point, Between a c d := by
+    sorry
+
+  noncomputable instance: HilbertGeometry2D Point where
+    Line := Line
     LiesOn := LiesOn
     Between := Between
     mk_line_from_points := mk_line_from_points
@@ -95,5 +104,7 @@ namespace Geometry.Analytic
     unique_line_from_two_points := unique_line_from_two_points
     line_exists_two_points := line_exists_two_points
     exists_three_point_not_on_same_line := exists_three_point_not_on_same_line
+    between_symm := between_symm
+    extension_exists := extension_exists
 
 end Geometry.Analytic
