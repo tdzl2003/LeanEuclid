@@ -7,6 +7,33 @@ namespace Geometry.Analytic
     x: ℝ
     y: ℝ
 
+  instance: HMul Point Real Point where
+    hMul(a: Point)(b: Real) := Point.mk (a.x*b) (a.y*b)
+
+  instance: Add Point where
+    add(a: Point)(b: Point) :=  Point.mk (a.x+b.x) (a.y+b.y)
+
+  def Between(a: Point)(b: Point)(c: Point): Prop :=
+    ∃ r: ℝ, r > 0 ∧ r < 1 ∧ a = b * r + c* (r-1)
+
+  /-- Between relation is exclusive. -/
+  theorem between_ne(a b c: Point):
+    Between a b c → a ≠ b ∨ b ≠ c :=
+  by
+    sorry
+
+  /-- axiom II.1: If A, B, C are points of a straight line and B lies Between A and C, then B lies also Between C and A.-/
+  theorem between_symm(a b c: Point):
+    Between a b c → Between c b a :=
+  by
+    sorry
+
+  /-- axiom II.2.2 If A and C are two points of a straight line, at least one point D so situated that C lies Between A and D.-/
+  theorem extension_exists(a c: Point):
+    a ≠ c → ∃ d: Point, Between a c d :=
+  by
+    sorry
+
   /-- Define a raw line by ax + by + c = 0-/
   structure LineRaw where
     a : ℝ
@@ -56,17 +83,8 @@ namespace Geometry.Analytic
 
   def Line := Quotient LineRaw.setoid
 
-  instance: HMul Point Real Point where
-    hMul(a: Point)(b: Real) := Point.mk (a.x*b) (a.y*b)
-
-  instance: Add Point where
-    add(a: Point)(b: Point) :=  Point.mk (a.x+b.x) (a.y+b.y)
-
   def LiesOn(a: Point)(l: Line): Prop :=
     Quotient.lift (LineRaw.LiesOn a) (fun l₁ l₂ h => propext (LineRaw.liesOn_equiv a l₁ l₂ h)) l
-
-  def Between(a: Point)(b: Point)(c: Point): Prop :=
-    ∃ r: ℝ, r > 0 ∧ r < 1 ∧ a = b * r + c* (r-1)
 
   noncomputable def mk_line_from_points(a b: Point): Line :=
     Quotient.mk'' <| LineRaw.mk_line_from_points a b
@@ -91,28 +109,34 @@ namespace Geometry.Analytic
   by
     sorry
 
-  /-- axiom II.1: If A, B, C are points of a straight line and B lies Between A and C, then B lies also Between C and A.-/
-  theorem between_symm(a b c: Point):
-    Between a b c → Between c b a :=
+  def Collinear (a b c : Point) : Prop := ∃ l : Line, LiesOn a l ∧ LiesOn b l ∧ LiesOn c l
+
+  def OnSegment(a b c: Point): Prop := Between a b c ∨ b = a ∨ b = c
+
+  theorem collinear_of_between(a b c: Point): Between a b c → Collinear a b c :=
   by
     sorry
 
-  /-- axiom II.2.2 If A and C are two points of a straight line, at least one point D so situated that C lies Between A and D.-/
-  theorem extension_exists(a c: Point):
-    a ≠ c → ∃ d: Point, Between a c d :=
+  theorem pasch_axiom {A B C: Point}(h: ¬Collinear A B C)(l: Line):
+    (∃ P: Point, OnSegment A P B ∧ LiesOn P l) →
+    (∃ Q: Point, OnSegment B Q C ∧ LiesOn Q l) ∨ (∃ R: Point, OnSegment A R C ∧ LiesOn R l) :=
   by
     sorry
 
-  noncomputable instance: HilbertAxioms2D Point where
-    Line := Line
-    LiesOn := LiesOn
+  noncomputable instance: HilbertAxiomsP Point where
     Between := Between
+    between_ne := between_ne
+    between_symm := between_symm
+    extension_exists := extension_exists
+
+  noncomputable instance: HilbertAxiomsPL Point Line where
+    LiesOn := LiesOn
     mk_line_from_points := mk_line_from_points
     mk_line_liesOn := mk_line_liesOn
     unique_line_from_two_points := unique_line_from_two_points
     line_exists_two_points := line_exists_two_points
     exists_three_point_not_on_same_line := exists_three_point_not_on_same_line
-    between_symm := between_symm
-    extension_exists := extension_exists
+    collinear_of_between := collinear_of_between
+    pasch_axiom := pasch_axiom
 
 end Geometry.Analytic
