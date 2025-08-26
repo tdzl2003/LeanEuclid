@@ -1,4 +1,5 @@
 import Geometry.Basic
+import Geometry.Connections
 import Mathlib.Tactic.ByContra
 import Mathlib.Data.Set.Basic
 import Mathlib.Data.Finset.Basic

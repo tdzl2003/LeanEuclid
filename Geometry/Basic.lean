@@ -74,7 +74,15 @@ namespace Geometry
 
   structure Polygon where
     vertices: List Point
+    hc: vertices.length ≥ 3
     hne: ∀ (a b: Point), a ∈ vertices → b ∈ vertices → a ≠ b
     hcol: ∀ (a b c: Point), a ∈ vertices → b ∈ vertices → c ∈ vertices → ¬Collinear Line a b c
+
+  def liesOnPolygon (poly: Polygon (Point := Point) (Line := Line))(p: Point): Prop :=
+    ∃ i : Fin poly.vertices.length,
+      let v1 := poly.vertices.get i
+      let v2 := poly.vertices.get ⟨(i + 1) % poly.vertices.length, by apply Nat.mod_lt; have := poly.hc; omega⟩
+      HilbertAxiomsP.OnSegment v1 p v2
+
 
 end Geometry
