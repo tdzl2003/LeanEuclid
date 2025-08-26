@@ -14,11 +14,12 @@ namespace Geometry.Analytic
     c : ℝ
     h : a ≠ 0 ∨ b ≠ 0
 
-  instance : DecidableEq Point := by
+  noncomputable instance : DecidableEq Point := by
     intro a b
     have hx : Decidable (a.x = b.x) := by infer_instance
     have hy : Decidable (a.y = b.y) := by infer_instance
-    sorry
+    rw [Point.mk.injEq]
+    exact instDecidableAnd
 
   namespace LineRaw
 
@@ -45,7 +46,7 @@ namespace Geometry.Analytic
       liesOn p l₁ ↔ liesOn p l₂ := by
         sorry
 
-    def mk_line_from_points(a b: Point): LineRaw :=
+    noncomputable def mk_line_from_points(a b: Point): LineRaw :=
       if a = b then
         LineRaw.mk 0 1 (-a.y) (by sorry)
       else
@@ -67,7 +68,7 @@ namespace Geometry.Analytic
   def between(a: Point)(b: Point)(c: Point): Prop :=
     ∃ r: ℝ, r > 0 ∧ r < 1 ∧ a = b * r + c* (r-1)
 
-  def mk_line_from_points(a b: Point): Line :=
+  noncomputable def mk_line_from_points(a b: Point): Line :=
     Quotient.mk'' <| LineRaw.mk_line_from_points a b
 
   theorem mk_line_liesOn(a b: Point):
