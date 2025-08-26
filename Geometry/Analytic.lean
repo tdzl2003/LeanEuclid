@@ -39,11 +39,11 @@ namespace Geometry.Analytic
       r := Equiv
       iseqv := ⟨equiv_refl, equiv_symm, equiv_trans⟩
 
-    def liesOn (p : Point) (l : LineRaw) : Prop :=
+    def LiesOn (p : Point) (l : LineRaw) : Prop :=
       l.a * p.x + l.b * p.y + l.c = 0
 
     theorem liesOn_equiv (p : Point) (l₁ l₂ : LineRaw) (h : LineRaw.Equiv l₁ l₂) :
-      liesOn p l₁ ↔ liesOn p l₂ := by
+      LiesOn p l₁ ↔ LiesOn p l₂ := by
         sorry
 
     noncomputable def mk_line_from_points(a b: Point): LineRaw :=
@@ -62,34 +62,34 @@ namespace Geometry.Analytic
   instance: Add Point where
     add(a: Point)(b: Point) :=  Point.mk (a.x+b.x) (a.y+b.y)
 
-  def liesOn(a: Point)(l: Line): Prop :=
-    Quotient.lift (LineRaw.liesOn a) (fun l₁ l₂ h => propext (LineRaw.liesOn_equiv a l₁ l₂ h)) l
+  def LiesOn(a: Point)(l: Line): Prop :=
+    Quotient.lift (LineRaw.LiesOn a) (fun l₁ l₂ h => propext (LineRaw.liesOn_equiv a l₁ l₂ h)) l
 
-  def between(a: Point)(b: Point)(c: Point): Prop :=
+  def Between(a: Point)(b: Point)(c: Point): Prop :=
     ∃ r: ℝ, r > 0 ∧ r < 1 ∧ a = b * r + c* (r-1)
 
   noncomputable def mk_line_from_points(a b: Point): Line :=
     Quotient.mk'' <| LineRaw.mk_line_from_points a b
 
   theorem mk_line_liesOn(a b: Point):
-    liesOn a (mk_line_from_points a b) ∧ liesOn b (mk_line_from_points a b) := by
+    LiesOn a (mk_line_from_points a b) ∧ LiesOn b (mk_line_from_points a b) := by
       sorry
 
   theorem unique_line_from_two_points(a b: Point)(l: Line):
-    a ≠ b → liesOn a l → liesOn b l → l = mk_line_from_points a b := by
+    a ≠ b → LiesOn a l → LiesOn b l → l = mk_line_from_points a b := by
       sorry
 
   theorem line_exists_two_points(l: Line):
-    ∃ a b: Point, a≠b ∧ liesOn a l ∧ liesOn b l := by
+    ∃ a b: Point, a≠b ∧ LiesOn a l ∧ LiesOn b l := by
       sorry
 
   theorem exists_three_point_not_on_same_line:
-    ∃ a b c: Point, a≠b ∧ b≠c ∧ a≠c ∧ ¬∃ l: Line, liesOn a l ∧ liesOn b l ∧ liesOn c l := by
+    ∃ a b c: Point, a≠b ∧ b≠c ∧ a≠c ∧ ¬∃ l: Line, LiesOn a l ∧ LiesOn b l ∧ LiesOn c l := by
       sorry
 
   noncomputable instance: HilbertGeometry2D Point Line where
-    liesOn := liesOn
-    between := between
+    LiesOn := LiesOn
+    Between := Between
     mk_line_from_points := mk_line_from_points
     mk_line_liesOn := mk_line_liesOn
     unique_line_from_two_points := unique_line_from_two_points
