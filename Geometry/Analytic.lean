@@ -72,27 +72,35 @@ namespace Geometry.Analytic
     Quotient.mk'' <| LineRaw.mk_line_from_points a b
 
   theorem mk_line_liesOn(a b: Point):
-    LiesOn a (mk_line_from_points a b) ∧ LiesOn b (mk_line_from_points a b) := by
-      sorry
+      LiesOn a (mk_line_from_points a b) ∧ LiesOn b (mk_line_from_points a b) :=
+  by
+    sorry
 
   theorem unique_line_from_two_points(a b: Point)(l: Line):
-    a ≠ b → LiesOn a l → LiesOn b l → l = mk_line_from_points a b := by
-      sorry
+      a ≠ b → LiesOn a l → LiesOn b l → l = mk_line_from_points a b :=
+  by
+    sorry
 
   theorem line_exists_two_points(l: Line):
-    ∃ a b: Point, a≠b ∧ LiesOn a l ∧ LiesOn b l := by
-      sorry
+      ∃ a b: Point, a≠b ∧ LiesOn a l ∧ LiesOn b l :=
+  by
+    sorry
 
   theorem exists_three_point_not_on_same_line:
-    ∃ a b c: Point, a≠b ∧ b≠c ∧ a≠c ∧ ¬∃ l: Line, LiesOn a l ∧ LiesOn b l ∧ LiesOn c l := by
-      sorry
+      ∃ a b c: Point, a≠b ∧ b≠c ∧ a≠c ∧ ¬∃ l: Line, LiesOn a l ∧ LiesOn b l ∧ LiesOn c l :=
+  by
+    sorry
 
   /-- axiom II.1: If A, B, C are points of a straight line and B lies Between A and C, then B lies also Between C and A.-/
-  theorem between_symm(a b c: Point): Between a b c → Between c b a := by
+  theorem between_symm(a b c: Point):
+    Between a b c → Between c b a :=
+  by
     sorry
 
   /-- axiom II.2.2 If A and C are two points of a straight line, at least one point D so situated that C lies Between A and D.-/
-  theorem extension_exists(a c: Point): a ≠ c → ∃ d: Point, Between a c d := by
+  theorem extension_exists(a c: Point):
+    a ≠ c → ∃ d: Point, Between a c d :=
+  by
     sorry
 
   noncomputable instance: HilbertAxioms2D Point where
