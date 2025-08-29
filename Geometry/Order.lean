@@ -5,40 +5,30 @@ import Mathlib.Data.Set.Basic
 import Mathlib.Data.Finset.Basic
 import Mathlib.Data.List.Basic
 
-namespace Geometry
-  open HilbertAxiomsP HilbertAxiomsPL
 
-  variable {Point: Type}[HilbertAxiomsP Point]
-  variable (Line: Type)[Membership Point Line][HilbertAxiomsPL Point Line]
-
-  /--
-    theorem II.2.1 If A and C are two points of a straight line, then there exists at least one point B lying Between A and C
-    We don't mension the line here, because we can always create a line from two points,
-    and prove that B is on the line.
-  -/
-  theorem between_exists(a c: Point): a ≠ c → ∃ b: Point, Between a b c := by
-    sorry
+namespace Geometry.HilbertAxioms1D
+  variable {Point: Type}[G: HilbertAxioms1D Point]
 
   /-- theorem II.3 Of any three points situated on a straight line, there is always one and only one which lies Between the other two. -/
-  theorem between_trichotomy(a b c: Point): Collinear Line a b c → a ≠ b → b ≠ c → a ≠ c →
-      (Between a b c ∨ Between b a c ∨ Between a c b) ∧
-      ¬(Between a b c ∧ Between b a c) ∧
-      ¬(Between a b c ∧ Between a c b) ∧
-      ¬(Between b a c ∧ Between a c b) := by
+  theorem between_trichotomy(a b c: Point): a ≠ b → b ≠ c → a ≠ c →
+      (G.Between a b c ∨ G.Between b a c ∨ G.Between a c b) ∧
+      ¬(G.Between a b c ∧ G.Between b a c) ∧
+      ¬(G.Between a b c ∧ G.Between a c b) ∧
+      ¬(G.Between b a c ∧ G.Between a c b) := by
     sorry
 
   /--
     If B is between A and C, and C is between B and D, then B is also between A and D, and C is also between A and D.
   -/
   theorem between_transitivity {A B C D : Point} :
-      Between A B C → Between B C D → Between A B D ∧ Between A C D := by
+      G.Between A B C → G.Between B C D → G.Between A B D ∧ G.Between A C D := by
     sorry
 
   /--
     If B is between A and C, and C is between A and D, then B is also between A and D, and C is also between B and D.
   -/
   theorem between_transitivity' {A B C D : Point} :
-      Between A B C → Between A C D → Between A B D ∧ Between B C D := by
+      G.Between A B C → G.Between A C D → G.Between A B D ∧ G.Between B C D := by
     sorry
 
   /--
@@ -47,11 +37,10 @@ namespace Geometry
     lie between A and D and also between B and D.
   -/
   theorem four_points_ordering{a b c d : Point} :
-      ∃ l : Line, a ∈ l → b ∈ l → c ∈ l → d ∈ l →
       a ≠ b → a ≠ c → a ≠ d → b ≠ c → b ≠ d → c ≠ d →
       ∃ (a' b' c' d' : Point),
         ({a', b', c', d'}: Set Point) =  {a,b,c,d} ∧
-        (Between a' b' c' ∧ Between a' b' d' ∧ Between a' c' d' ∧ Between b' c' d') :=
+        (G.Between a' b' c' ∧ G.Between a' b' d' ∧ G.Between a' c' d' ∧ G.Between b' c' d') :=
   by
     sorry
 
@@ -71,8 +60,7 @@ namespace Geometry
 
   /-- Theorem 4.1 : For any finite set of points on a straight line, there exists a linearly ordered list
       of these points, and only two such lists exist (the forward and reverse order). -/
-  theorem linear_ordering_of_collinear_points{Line: Type}[Membership Point Line][HilbertAxiomsPL Point Line][DecidableEq Point] (l : Line) (S : Finset Point)
-      (h : ∀ p ∈ S, p ∈ l) :
+  theorem linear_ordering_of_collinear_points[DecidableEq Point](S : Finset Point) :
       ∃ (L : List Point),
         L.toFinset = S ∧
         List.Nodup L ∧
@@ -87,70 +75,69 @@ namespace Geometry
   by
     sorry
 
-  section
-    variable {Line: Type}[Membership Point Line][HilbertAxiomsPL Point Line]
-    variable {Plane: Type}[Membership Point Plane][HilbertAxiomsPLP Point Line Plane]
+end Geometry.HilbertAxioms1D
 
-    theorem onSameSide.not_liesOn(pl: Plane)(l: Line)(a b: Point):
-        SameSideOfLine pl l a b → ¬ a ∈ l ∧ ¬ b ∈ l :=
-    by
-      sorry
+namespace Geometry.HilbertAxioms2D
+  variable {Point Line: Type}[Membership Point Line][G: HilbertAxioms2D Point Line]
 
-    theorem onOtherSide.not_liesOn(pl: Plane)(l: Line)(a b: Point):
-        OtherSideOfLine pl l a b → ¬ a ∈ l ∧ ¬ b ∈  l :=
-    by
-      sorry
+  theorem onSameSide.not_liesOn(l: Line)(a b: Point):
+      G.SameSideOfLine l a b → ¬ a ∈ l ∧ ¬ b ∈ l :=
+  by
+    sorry
 
-    theorem onSameSide.not_onOtherSide(pl: Plane)(pl: Plane)(l: Line)(a b: Point):
-        SameSideOfLine pl l a b → ¬ OtherSideOfLine pl l a b :=
-    by
-      sorry
+  theorem onOtherSide.not_liesOn(l: Line)(a b: Point):
+      OtherSideOfLine l a b → ¬ a ∈ l ∧ ¬ b ∈  l :=
+  by
+    sorry
 
-    theorem onOtherSide.not_onSameSide(pl: Plane)(l: Line)(a b: Point):
-        OtherSideOfLine pl l a b → ¬ SameSideOfLine pl l a b :=
-    by
-      sorry
+  theorem onSameSide.not_onOtherSide(l: Line)(a b: Point):
+      SameSideOfLine l a b → ¬ OtherSideOfLine l a b :=
+  by
+    sorry
 
-    theorem onSameSide.not (pl: Plane)(l: Line)(a b: Point):
-        a ∈ pl → b ∈ pl → l ⊆ pl → ¬ SameSideOfLine pl l a b → a ∈ l ∨ b ∈ l ∨ OtherSideOfLine pl l a b:=
-    by
-      sorry
+  theorem onOtherSide.not_onSameSide(l: Line)(a b: Point):
+      OtherSideOfLine l a b → ¬ SameSideOfLine l a b :=
+  by
+    sorry
 
-    theorem onOtherSide.not (pl: Plane)(l: Line)(a b: Point):
-        a ∈ pl → b ∈ pl → l ⊆ pl → ¬ OtherSideOfLine pl l a b → a ∈ l ∨ b ∈ l ∨ SameSideOfLine pl l a b :=
-    by
-      sorry
+  theorem onSameSide.not (l: Line)(a b: Point):
+      ¬ SameSideOfLine l a b → a ∈ l ∨ b ∈ l ∨ OtherSideOfLine l a b:=
+  by
+    sorry
 
-    theorem onSameSide.reflex (pl: Plane)(l: Line)(a: Point):
-        a ∈ pl →  l ⊆ pl → SameSideOfLine pl l a a :=
-    by
-      sorry
+  theorem onOtherSide.not (l: Line)(a b: Point):
+      ¬ OtherSideOfLine l a b → a ∈ l ∨ b ∈ l ∨ SameSideOfLine l a b :=
+  by
+    sorry
 
-    theorem onOtherSide.not_reflex(pl: Plane)(l: Line)(a: Point):
-        a ∈ pl →  l ⊆ pl → ¬ OtherSideOfLine pl l a a :=
-    by
-      sorry
+  theorem onSameSide.reflex (l: Line)(a: Point):
+      SameSideOfLine l a a :=
+  by
+    sorry
 
-    theorem onSameSide.symm(l: Line)(a b: Point):
-        onSameSide l a b → onSameSide l b a :=
-    by
-      sorry
+  theorem onOtherSide.not_reflex(l: Line)(a: Point):
+      ¬ OtherSideOfLine l a a :=
+  by
+    sorry
 
-    theorem onOtherSide.symm(l: Line)(a b: Point):
-        onOtherSide l a b → onOtherSide l b a :=
-    by
-      sorry
+  theorem onSameSide.symm(l: Line)(a b: Point):
+      SameSideOfLine l a b → SameSideOfLine l b a :=
+  by
+    sorry
 
-    theorem onSameSide.trans(l: Line)(a b c: Point):
-        onSameSide l a b → onSameSide l b c → onSameSide l a c :=
-    by
-      sorry
+  theorem onOtherSide.symm(l: Line)(a b: Point):
+      OtherSideOfLine l a b → OtherSideOfLine l b a :=
+  by
+    sorry
 
-    theorem onOtherSide.trans(a b c: Point)(h: a ≠ b)(l: Line):
-        onOtherSide l a b → onOtherSide l b c → onSameSide l a c :=
-    by
-      sorry
+  theorem onSameSide.trans(l: Line)(a b c: Point):
+      SameSideOfLine l a b → SameSideOfLine l b c → SameSideOfLine l a c :=
+  by
+    sorry
 
-  end
+  theorem onOtherSide.trans(a b c: Point)(h: a ≠ b)(l: Line):
+      OtherSideOfLine l a b → OtherSideOfLine l b c → SameSideOfLine l a c :=
+  by
+    sorry
 
-end Geometry
+end Geometry.HilbertAxioms2D

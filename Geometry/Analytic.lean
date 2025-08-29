@@ -80,28 +80,31 @@ namespace Geometry.Analytic2D
 
   def Line := Quotient LineRaw.setoid
 
-  def LiesOn(a: Point)(l: Line): Prop :=
+  private def LiesOn(l: Line)(a: Point): Prop :=
     Quotient.lift (LineRaw.LiesOn a) (fun l₁ l₂ h => propext (LineRaw.liesOn_equiv a l₁ l₂ h)) l
+
+  instance: Membership Point Line where
+    mem := LiesOn
 
   noncomputable def mk_line(a b: Point)(h: a≠b): Line :=
     Quotient.mk'' <| LineRaw.mk_line a b h
 
   theorem mk_line_liesOn(a b: Point)(h: a≠ b):
-      LiesOn a (mk_line a b h) ∧ LiesOn b (mk_line a b h) :=
+      a ∈ (mk_line a b h) ∧ b ∈ (mk_line a b h) :=
   by
     sorry
 
   theorem unique_line_from_two_points(a b: Point)(l: Line)(h:  a ≠ b):
-      LiesOn a l → LiesOn b l → l = mk_line a b h :=
+      a ∈ l → b ∈ l → l = mk_line a b h :=
   by
     sorry
 
   theorem line_exists_two_points(l: Line):
-      ∃ a b: Point, a≠b ∧ LiesOn a l ∧ LiesOn b l :=
+      ∃ a b: Point, a≠b ∧ a ∈ l ∧ b ∈ l :=
   by
     sorry
 
-  def Collinear (a b c : Point) : Prop := ∃ l : Line, LiesOn a l ∧ LiesOn b l ∧ LiesOn c l
+  def Collinear (a b c : Point) : Prop := ∃ l : Line, a ∈ l ∧ b ∈ l ∧ c ∈ l
 
   def OnSegment(a b c: Point): Prop := Between a b c ∨ b = a ∨ b = c
 
@@ -110,34 +113,27 @@ namespace Geometry.Analytic2D
     sorry
 
   theorem pasch_axiom {A B C: Point}(h: ¬Collinear A B C)(l: Line):
-      (∃ P: Point, OnSegment A P B ∧ LiesOn P l) →
-      (∃ Q: Point, OnSegment B Q C ∧ LiesOn Q l) ∨ (∃ R: Point, OnSegment A R C ∧ LiesOn R l) :=
+      (∃ P: Point, OnSegment A P B ∧ P ∈ l) →
+      (∃ Q: Point, OnSegment B Q C ∧ Q ∈ l) ∨ (∃ R: Point, OnSegment A R C ∧ R ∈ l) :=
   by
     sorry
 
-  theorem exists_three_point_not_on_same_line:
+  theorem exists_three_noncollinear_points:
       ∃ a b c: Point, ¬Collinear a b c :=
   by
     sorry
 
-  noncomputable instance: HilbertAxiomsP Point where
+  noncomputable instance: HilbertAxioms2D Point Line where
     Between := Between
     between_ne := between_ne
-    between_symm := between_symm
     extension_exists := extension_exists
-
-  noncomputable instance: HilbertAxiomsPL Point Line where
-    LiesOn := LiesOn
     mk_line := mk_line
     mk_line_liesOn := mk_line_liesOn
     unique_line_from_two_points := unique_line_from_two_points
     line_exists_two_points := line_exists_two_points
     collinear_of_between := collinear_of_between
 
-   axiom exists_three_noncollinear_points: ∃ a b c: Point, ¬Collinear a b c
-
-  noncomputable instance: HilbertAxioms2D Point Line where
-    exists_three_noncollinear_points := exists_three_point_not_on_same_line
+    exists_three_noncollinear_points := exists_three_noncollinear_points
     pasch_axiom := pasch_axiom
 
 end Geometry.Analytic2D

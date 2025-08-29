@@ -1,10 +1,8 @@
 import Geometry.Basic
 import Mathlib.Tactic.ByContra
 
-namespace Geometry
-  open HilbertAxiomsPL
-
-  variable {Point Line: Type} [Membership Point Line] [HilbertAxiomsPL Point Line]
+namespace Geometry.HilbertAxioms2D
+  variable {Point Line: Type} [Membership Point Line] [HilbertAxioms2D Point Line]
 
   /-- Another way to express Axiom I.2: that is, if AB = a and AC = a, where B ̸= C, then is also BC = a.  -/
   theorem line_bc_eq_of_ab_and_ac_eq (a b c: Point)(l: Line)(hab: a≠b)(hac: a≠c)(hbc:b≠c):
@@ -30,4 +28,4 @@ namespace Geometry
       rw [t1, t2]
     exact absurd this h
 
-end Geometry
+end Geometry.HilbertAxioms2D
