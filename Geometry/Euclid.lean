@@ -60,11 +60,11 @@ namespace Geometry.Euclid
     unique_line_from_two_points := unique_line_from_two_points
     line_exists_two_points := line_exists_two_points
     collinear_of_between := collinear_of_between
-    pasch_axiom := pasch_axiom
 
   axiom exists_three_noncollinear_points: ∃ a b c: Point, ¬Collinear a b c
 
   noncomputable instance: HilbertAxioms2D Point Line where
     exists_three_noncollinear_points := exists_three_noncollinear_points
+    pasch_axiom := pasch_axiom
 
 end Geometry.Euclid

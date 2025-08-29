@@ -50,14 +50,6 @@ class HilbertAxiomsPL (Point Line: Type) extends HilbertAxiomsP Point where
   /-- Between implies Collinear -/
   collinear_of_between(a b c: Point): Between a b c → Collinear a b c
 
-  /-- axiom II.5: Let A, B, C be three points not lying in the same straight line and let a be a
-  straight line lying in the plane ABC and not passing through any of the points A,
-  B, C. Then, if the straight line a passes through a point of the segment AB, it will
-  also pass through either a point of the segment BC or a point of the segment AC.-/
-  pasch_axiom {A B C: Point}(h: ¬Collinear A B C)(l: Line):
-    (∃ P: Point, OnSegment A P B ∧ LiesOn P l) →
-    (∃ Q: Point, OnSegment B Q C ∧ LiesOn Q l) ∨ (∃ R: Point, OnSegment A R C ∧ LiesOn R l)
-
 /-- axiom about point, line, and plane, at least 2 dimensions -/
 class HilbertAxiomsPLP (Point Line Plane: Type) extends HilbertAxiomsPL Point Line where
   LiesOnPlane(a: Point)(pl: Plane): Prop
@@ -88,6 +80,14 @@ class HilbertAxiomsPLP (Point Line Plane: Type) extends HilbertAxiomsPL Point Li
 
   /-- axiom I.7.2: in every plane at least three points not lying in the same straight line -/
   plane_exists_three_noncollinear_points(pl: Plane): ∃ a b c: Point, ¬Collinear a b c ∧ LiesOnPlane a pl ∧ LiesOnPlane b pl ∧ LiesOnPlane c pl
+
+  /-- axiom II.5: Let A, B, C be three points not lying in the same straight line and let a be a
+  straight line lying in the plane ABC and not passing through any of the points A,
+  B, C. Then, if the straight line a passes through a point of the segment AB, it will
+  also pass through either a point of the segment BC or a point of the segment AC.-/
+  pasch_axiom {A B C: Point}(h: ¬Collinear A B C)(l: Line)(h: LineLiesOnPlane l (mk_plane_fromPoints A B C h)):
+    (∃ P: Point, OnSegment A P B ∧ LiesOn P l) →
+    (∃ Q: Point, OnSegment B Q C ∧ LiesOn Q l) ∨ (∃ R: Point, OnSegment A R C ∧ LiesOn R l)
 
 /-- axioms about space, at least 3 dimensions. -/
 class HibertAxiomPLPS (Point Line Plane: Type) extends HilbertAxiomsPLP Point Line Plane where
@@ -134,59 +134,74 @@ namespace Geometry
 end Geometry
 
 namespace Geometry
-  open HilbertAxiomsPL
+  open HilbertAxiomsP HilbertAxiomsPL HilbertAxiomsPLP
 
   class HilbertAxioms2D (Point Line: Type) extends HilbertAxiomsPL Point Line where
     exists_three_noncollinear_points: ∃ a b c: Point, ¬Collinear a b c
+    pasch_axiom {A B C: Point}(h: ¬Collinear A B C)(l: Line):
+      (∃ P: Point, OnSegment A P B ∧ LiesOn P l) →
+      (∃ Q: Point, OnSegment B Q C ∧ LiesOn Q l) ∨ (∃ R: Point, OnSegment A R C ∧ LiesOn R l)
 
-  variable {Point Line: Type}[HilbertAxioms2D Point Line]
+  namespace HilbertAxioms2D.instHilbertAxiomsPLP
+    variable {Point Line: Type}[HilbertAxioms2D Point Line]
 
-  def LiesOnPlane(a: Point)(pl: Unit): Prop := True
-  def mk_plane_fromPoints(a b c: Point)(h: ¬Collinear Line a b c): Unit := ()
+    private def LiesOnPlane(a: Point)(pl: Unit): Prop := True
+    private def LineLiesOnPlane(l: Line)(pl: Unit): Prop := ∀ p: Point, LiesOn p l → LiesOnPlane p pl
+    private def mk_plane_fromPoints(a b c: Point)(h: ¬Collinear Line a b c): Unit := ()
 
-  theorem mk_plane_liesOn{a b c: Point}{h: ¬Collinear Line a b c}:
-      LiesOnPlane a (mk_plane_fromPoints a b c h) ∧
-      LiesOnPlane b (mk_plane_fromPoints a b c h) ∧
-      LiesOnPlane c (mk_plane_fromPoints a b c h):=
-  by
-    simp only [LiesOnPlane, and_self]
+    private theorem mk_plane_liesOn{a b c: Point}{h: ¬Collinear Line a b c}:
+        LiesOnPlane a (mk_plane_fromPoints a b c h) ∧
+        LiesOnPlane b (mk_plane_fromPoints a b c h) ∧
+        LiesOnPlane c (mk_plane_fromPoints a b c h):=
+    by
+      simp only [LiesOnPlane, and_self]
 
-  /-- axiom I.4: Any three points A, B, C of a plane α, which do not lie in the same straight line, completely determine that plane. -/
-  theorem unique_plane_from_three_points(a b c: Point)(pl: Unit)(h: ¬Collinear Line a b c):
-      LiesOnPlane a pl → LiesOnPlane b pl → LiesOnPlane c pl → pl = mk_plane_fromPoints a b c h :=
-  by
-    intro _ _ _
-    cases pl
-    rfl
+    /-- axiom I.4: Any three points A, B, C of a plane α, which do not lie in the same straight line, completely determine that plane. -/
+    private theorem unique_plane_from_three_points(a b c: Point)(pl: Unit)(h: ¬Collinear Line a b c):
+        LiesOnPlane a pl → LiesOnPlane b pl → LiesOnPlane c pl → pl = mk_plane_fromPoints a b c h :=
+    by
+      intro _ _ _
+      cases pl
+      rfl
 
-  /-- axiom I.5: If two points A, B of a straight line a lie in a plane α, then every point of a lies in a.-/
-  theorem line_in_plane_if_two_points_in_plane(a b: Point)(l: Line)(pl: Unit)(h: a ≠ b):
-      LiesOn a l → LiesOn b l → LiesOnPlane a pl → LiesOnPlane b pl →
-      ∀ p: Point, LiesOn p l → LiesOnPlane p pl :=
-  by
-    intro _ _ _ _ p hp
-    simp only [LiesOnPlane]
+    /-- axiom I.5: If two points A, B of a straight line a lie in a plane α, then every point of a lies in a.-/
+    private theorem line_in_plane_if_two_points_in_plane(a b: Point)(l: Line)(pl: Unit)(h: a ≠ b):
+        LiesOn a l → LiesOn b l → LiesOnPlane a pl → LiesOnPlane b pl →
+        ∀ p: Point, LiesOn p l → LiesOnPlane p pl :=
+    by
+      intro _ _ _ _ p hp
+      simp only [LiesOnPlane]
 
-  /-- axiom I.6: If two planes α, β have a point A in common, then they have at least a second point B in common.-/
-  theorem plane_intersection_exists_two_points(pl1 pl2: Unit)(h: pl1 ≠ pl2)(a: Point):
-      LiesOnPlane a pl1 ∧ LiesOnPlane a pl2 →
-      ∃ b: Point, b ≠ a ∧ LiesOnPlane b pl1 ∧ LiesOnPlane a pl2 :=
-  by
-    sorry
+    /-- axiom I.6: If two planes α, β have a point A in common, then they have at least a second point B in common.-/
+    private theorem plane_intersection_exists_two_points(pl1 pl2: Unit)(h: pl1 ≠ pl2)(a: Point):
+        LiesOnPlane a pl1 ∧ LiesOnPlane a pl2 →
+        ∃ b: Point, b ≠ a ∧ LiesOnPlane b pl1 ∧ LiesOnPlane a pl2 :=
+    by
+      sorry
 
-  theorem plane_exists_three_noncollinear_points(pl: Unit):
-      ∃ a b c: Point, ¬Collinear Line a b c ∧ LiesOnPlane a pl ∧ LiesOnPlane b pl ∧ LiesOnPlane c pl :=
-  by
-    sorry
+    private theorem plane_exists_three_noncollinear_points(pl: Unit):
+        ∃ a b c: Point, ¬Collinear Line a b c ∧ LiesOnPlane a pl ∧ LiesOnPlane b pl ∧ LiesOnPlane c pl :=
+    by
+      sorry
 
-  /-- axiom about point, line, and plane, in 2 dimensions space -/
-  noncomputable instance: HilbertAxiomsPLP Point Line Unit where
-    LiesOnPlane := LiesOnPlane
-    mk_plane_fromPoints := mk_plane_fromPoints
-    mk_plane_liesOn := mk_plane_liesOn
-    unique_plane_from_three_points := unique_plane_from_three_points
-    line_in_plane_if_two_points_in_plane := line_in_plane_if_two_points_in_plane
-    plane_intersection_exists_two_points := plane_intersection_exists_two_points
-    plane_exists_three_noncollinear_points := plane_exists_three_noncollinear_points
+    private theorem pasch_axiom {A B C: Point}(h: ¬Collinear Line A B C)(l: Line)
+      (_: LineLiesOnPlane (Point:=Point) l (mk_plane_fromPoints (Line:=Line) A B C h)):
+        (∃ P: Point, OnSegment A P B ∧ LiesOn P l) →
+        (∃ Q: Point, OnSegment B Q C ∧ LiesOn Q l) ∨ (∃ R: Point, OnSegment A R C ∧ LiesOn R l) :=
+    by
+      apply HilbertAxioms2D.pasch_axiom h l
+
+    /-- axiom about point, line, and plane, in 2 dimensions space -/
+    noncomputable instance: HilbertAxiomsPLP Point Line Unit where
+      LiesOnPlane := LiesOnPlane
+      mk_plane_fromPoints := mk_plane_fromPoints
+      mk_plane_liesOn := mk_plane_liesOn
+      unique_plane_from_three_points := unique_plane_from_three_points
+      line_in_plane_if_two_points_in_plane := line_in_plane_if_two_points_in_plane
+      plane_intersection_exists_two_points := plane_intersection_exists_two_points
+      plane_exists_three_noncollinear_points := plane_exists_three_noncollinear_points
+      pasch_axiom := pasch_axiom
+
+  end HilbertAxioms2D.instHilbertAxiomsPLP
 
 end Geometry

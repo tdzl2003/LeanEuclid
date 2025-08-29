@@ -133,11 +133,11 @@ namespace Geometry.Analytic2D
     unique_line_from_two_points := unique_line_from_two_points
     line_exists_two_points := line_exists_two_points
     collinear_of_between := collinear_of_between
-    pasch_axiom := pasch_axiom
 
    axiom exists_three_noncollinear_points: ∃ a b c: Point, ¬Collinear a b c
 
   noncomputable instance: HilbertAxioms2D Point Line where
     exists_three_noncollinear_points := exists_three_point_not_on_same_line
+    pasch_axiom := pasch_axiom
 
 end Geometry.Analytic2D
