@@ -1,7 +1,7 @@
 import Geometry.Basic
 import Mathlib.Data.Real.Basic
 
-namespace Geometry.Analytic
+namespace Geometry.Analytic2D
   /-- Define a point a (x, y) -/
   structure Point where
     x: ℝ
@@ -73,11 +73,8 @@ namespace Geometry.Analytic
       LiesOn p l₁ ↔ LiesOn p l₂ := by
         sorry
 
-    noncomputable def mk_line_from_points(a b: Point): LineRaw :=
-      if a = b then
-        LineRaw.mk 0 1 (-a.y) (by sorry)
-      else
-        LineRaw.mk (b.y-a.y) (a.x-b.x) (b.x*a.y - a.x*b.y) (by sorry)
+    noncomputable def mk_line(a b: Point)(h: a≠b): LineRaw :=
+      LineRaw.mk (b.y-a.y) (a.x-b.x) (b.x*a.y - a.x*b.y) (by sorry)
 
   end LineRaw
 
@@ -86,26 +83,21 @@ namespace Geometry.Analytic
   def LiesOn(a: Point)(l: Line): Prop :=
     Quotient.lift (LineRaw.LiesOn a) (fun l₁ l₂ h => propext (LineRaw.liesOn_equiv a l₁ l₂ h)) l
 
-  noncomputable def mk_line_from_points(a b: Point): Line :=
-    Quotient.mk'' <| LineRaw.mk_line_from_points a b
+  noncomputable def mk_line(a b: Point)(h: a≠b): Line :=
+    Quotient.mk'' <| LineRaw.mk_line a b h
 
-  theorem mk_line_liesOn(a b: Point):
-      LiesOn a (mk_line_from_points a b) ∧ LiesOn b (mk_line_from_points a b) :=
+  theorem mk_line_liesOn(a b: Point)(h: a≠ b):
+      LiesOn a (mk_line a b h) ∧ LiesOn b (mk_line a b h) :=
   by
     sorry
 
-  theorem unique_line_from_two_points(a b: Point)(l: Line):
-      a ≠ b → LiesOn a l → LiesOn b l → l = mk_line_from_points a b :=
+  theorem unique_line_from_two_points(a b: Point)(l: Line)(h:  a ≠ b):
+      LiesOn a l → LiesOn b l → l = mk_line a b h :=
   by
     sorry
 
   theorem line_exists_two_points(l: Line):
       ∃ a b: Point, a≠b ∧ LiesOn a l ∧ LiesOn b l :=
-  by
-    sorry
-
-  theorem exists_three_point_not_on_same_line:
-      ∃ a b c: Point, a≠b ∧ b≠c ∧ a≠c ∧ ¬∃ l: Line, LiesOn a l ∧ LiesOn b l ∧ LiesOn c l :=
   by
     sorry
 
@@ -118,8 +110,13 @@ namespace Geometry.Analytic
     sorry
 
   theorem pasch_axiom {A B C: Point}(h: ¬Collinear A B C)(l: Line):
-    (∃ P: Point, OnSegment A P B ∧ LiesOn P l) →
-    (∃ Q: Point, OnSegment B Q C ∧ LiesOn Q l) ∨ (∃ R: Point, OnSegment A R C ∧ LiesOn R l) :=
+      (∃ P: Point, OnSegment A P B ∧ LiesOn P l) →
+      (∃ Q: Point, OnSegment B Q C ∧ LiesOn Q l) ∨ (∃ R: Point, OnSegment A R C ∧ LiesOn R l) :=
+  by
+    sorry
+
+  theorem exists_three_point_not_on_same_line:
+      ∃ a b c: Point, ¬Collinear a b c :=
   by
     sorry
 
@@ -131,12 +128,16 @@ namespace Geometry.Analytic
 
   noncomputable instance: HilbertAxiomsPL Point Line where
     LiesOn := LiesOn
-    mk_line_from_points := mk_line_from_points
+    mk_line := mk_line
     mk_line_liesOn := mk_line_liesOn
     unique_line_from_two_points := unique_line_from_two_points
     line_exists_two_points := line_exists_two_points
-    exists_three_point_not_on_same_line := exists_three_point_not_on_same_line
     collinear_of_between := collinear_of_between
     pasch_axiom := pasch_axiom
 
-end Geometry.Analytic
+   axiom exists_three_noncollinear_points: ∃ a b c: Point, ¬Collinear a b c
+
+  noncomputable instance: HilbertAxioms2D Point Line where
+    exists_three_noncollinear_points := exists_three_point_not_on_same_line
+
+end Geometry.Analytic2D

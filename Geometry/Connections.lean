@@ -7,16 +7,15 @@ namespace Geometry
   variable {Point Line: Type} [HilbertAxiomsPL Point Line]
 
   /-- Another way to express Axiom I.2: that is, if AB = a and AC = a, where B ̸= C, then is also BC = a.  -/
-  theorem line_bc_eq_of_ab_and_ac_eq (a b c: Point)(l: Line): b ≠ c →
-      mk_line_from_points a b = l → mk_line_from_points a c = l → mk_line_from_points b c = l
+  theorem line_bc_eq_of_ab_and_ac_eq (a b c: Point)(l: Line)(hab: a≠b)(hac: a≠c)(hbc:b≠c):
+      mk_line a b hab = l → mk_line a c hac = l → mk_line b c hbc = l
       :=
   by
-    intro hne hab hac
-    have ha : LiesOn a l := by rw [←hab]; exact (mk_line_liesOn a b).left
-    have hb : LiesOn b l := by rw [←hab]; exact (mk_line_liesOn a b).right
-    have hc : LiesOn c l := by rw [←hac]; exact (mk_line_liesOn a c).right
+    intro hab hac
+    have hb : LiesOn b l := by rw [←hab]; exact (mk_line_liesOn a b _).right
+    have hc : LiesOn c l := by rw [←hac]; exact (mk_line_liesOn a c _).right
     apply Eq.symm
-    exact unique_line_from_two_points b c l hne hb hc
+    exact unique_line_from_two_points b c l hbc hb hc
 
   /-- Theorem 1.1. Two straight lines of a plane have either one point or no point in
     common -/

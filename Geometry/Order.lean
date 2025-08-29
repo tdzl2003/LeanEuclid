@@ -10,7 +10,11 @@ namespace Geometry
 
   variable {Point: Type}[HilbertAxiomsP Point]
 
-  /-- theorem II.2.1 If A and C are two points of a straight line, then there exists at least one point B lying Between A and C-/
+  /--
+    theorem II.2.1 If A and C are two points of a straight line, then there exists at least one point B lying Between A and C
+    We don't mension the line here, because we can always create a line from two points,
+    and prove that B is on the line.
+  -/
   theorem between_exists(a c: Point): a ≠ c → ∃ b: Point, Between a b c := by
     sorry
 
