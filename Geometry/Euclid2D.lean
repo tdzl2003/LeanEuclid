@@ -1,6 +1,7 @@
 import Geometry.Basic
+import Geometry.Polygon
 
-namespace Geometry.Euclid
+namespace Geometry.Euclid2D
 
   axiom Point: Type
 
@@ -65,4 +66,45 @@ namespace Geometry.Euclid
     pasch_axiom:=pasch_axiom
 
 
-end Geometry.Euclid
+  section
+    abbrev BrokenLine := HilbertAxioms2D.BrokenLine (Point := Point) (Line := Line)
+    abbrev Polygon := HilbertAxioms2D.Polygon (Point := Point) (Line := Line)
+
+    axiom inside: Polygon → Point → Prop
+    axiom outside: Polygon → Point → Prop
+    axiom inside_outside_disjoint: ∀ (poly: Polygon), ∀ (p: Point),  ¬(inside poly p ∧ outside poly p)
+    axiom inside_outside_boundary_exhaustive: ∀ (poly: Polygon), ∀ (p: Point), inside poly p ∨ outside poly p ∨ p ∈ poly
+    axiom inside_path_connected: ∀ (poly: Polygon), poly.isSimple → ∀ (a b: Point), inside poly a → inside poly b →
+      ∃ (γ: BrokenLine),
+        (∀ p: Point, p ∈ γ → inside poly p) ∧
+        γ.head = a ∧
+        γ.last = b
+    axiom outside_path_connected: ∀ (poly: Polygon), ∀ (a b: Point), outside poly a → outside poly b →
+      ∃ (γ: BrokenLine),
+        (∀ p: Point, p ∈ γ → outside poly p) ∧
+        γ.head = a ∧
+        γ.last = b
+    axiom crossing_edge: ∀ (poly: Polygon), ∀ (a b: Point), inside poly a → outside poly b →
+      (∀ (γ: BrokenLine),
+        γ.head = a →
+        γ.last = b →
+        ∃ p: Point, p ∈ γ ∧ p ∈ poly
+      )
+    axiom not_exists_inside_line: ∀ (poly: Polygon), ¬ ∃ l:Line, ∀ p ∈ l, inside poly p
+
+    theorem exists_outside_line: ∀ (poly: Polygon), ∃ l:Line, ∀ p ∈ l, outside poly p := by
+      sorry
+
+    noncomputable instance {poly: Polygon}{hSimple: poly.isSimple}: HilbertAxioms2D.PolygonalRegion poly hSimple where
+      inside := inside poly
+      outside := outside poly
+      inside_outside_disjoint := inside_outside_disjoint poly
+      inside_outside_boundary_exhaustive := inside_outside_boundary_exhaustive poly
+      inside_path_connected := inside_path_connected poly hSimple
+      outside_path_connected := outside_path_connected poly
+      crossing_edge := crossing_edge poly
+      not_exists_inside_line := not_exists_inside_line poly
+      exists_outside_line:= exists_outside_line poly
+  end
+
+end Geometry.Euclid2D

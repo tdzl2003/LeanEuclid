@@ -179,29 +179,6 @@ namespace Geometry.HilbertAxioms2D
   def OtherSideOfLine(l: Line)(a b: Point): Prop :=
     ∃ c: Point, Between Line a c b ∧ c ∈ l
 
-  structure Polygon{Line: Type}[Membership Point Line][HilbertAxioms2D Point Line] where
-    vertices: List Point
-    hc: vertices.length ≥ 3
-
-  def Polygon.edgeAt (poly: Polygon (Point := Point) (Line := Line))(i: Fin poly.vertices.length): Segment (Point := Point) (Line := Line) :=
-    let v1 := poly.vertices.get i
-    let v2 := poly.vertices.get ⟨(i + 1) % poly.vertices.length, by apply Nat.mod_lt; have := poly.hc; omega⟩
-    { p1 := v1, p2 := v2 }
-
-  def Polygon.isSimple (poly: Polygon (Point := Point) (Line := Line) ): Prop :=
-    ∀ i j : Fin poly.vertices.length,
-      i ≠ j →
-      let e1 := poly.edgeAt i
-      let e2 := poly.edgeAt j
-      ∀ p: Point, p ∈ e1 → p ∈ e2 → False
-
-  def Polygon.LiesOn (poly: Polygon (Point := Point) (Line := Line))(p: Point): Prop :=
-    ∃ i : Fin poly.vertices.length,
-      let v1 := poly.vertices.get i
-      let v2 := poly.vertices.get ⟨(i + 1) % poly.vertices.length, by apply Nat.mod_lt; have := poly.hc; omega⟩
-      OnSegment Line v1 p v2
-
-
   /-- Induce a 1D Hilbert axioms structure on points lying on a line in 2D plane. -/
   def onLine{Point Line: Type}[Membership Point Line][HilbertAxioms2D Point Line](l: Line):
     let SubPointType := {p: Point // p ∈ l}
