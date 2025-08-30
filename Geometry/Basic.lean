@@ -226,9 +226,13 @@ end Geometry.HilbertAxioms2D
 
 namespace Geometry.HilbertAxioms3D
    /-- Induce a 2D Hilbert axioms structure on points lying in 2D plane. -/
-  def onLine{Point Line Plane: Type}[Membership Point Line][Membership Point Plane][HilbertAxioms3D Point Line Plane](pl: Plane):
+  def onPlane{Point Line Plane: Type}[Membership Point Line][Membership Point Plane][HilbertAxioms3D Point Line Plane](pl: Plane):
     let SubPointType := {p: Point // p ∈ pl}
     let SubLineType := {l: Line // l ⊆ pl}
+    HilbertAxioms2D SubPointType SubLineType := sorry
+
+  def onLine{Point Line Plane: Type}[Membership Point Line][Membership Point Plane][HilbertAxioms3D Point Line Plane](l: Line):
+    let SubPointType := {p: Point // p ∈ l}
     HilbertAxioms1D SubPointType := sorry
 
 end Geometry.HilbertAxioms3D
