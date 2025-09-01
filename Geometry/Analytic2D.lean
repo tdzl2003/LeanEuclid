@@ -124,7 +124,9 @@ namespace Geometry.Analytic2D
   by
     sorry
 
-  noncomputable instance: HilbertAxioms2D Point Line where
+  noncomputable instance: HilbertAxioms2D Point where
+    Line := Line
+    mem_Line := by infer_instance
     Between := Between
     between_ne := between_ne
     extension_exists := extension_exists
@@ -138,8 +140,9 @@ namespace Geometry.Analytic2D
     pasch_axiom := pasch_axiom
 
   section
-    abbrev BrokenLine := HilbertAxioms2D.BrokenLine (Point := Point) (Line := Line)
-    abbrev Polygon := HilbertAxioms2D.Polygon (Point := Point) (Line := Line)
+    abbrev Segment := Geometry.Segment Point
+    abbrev BrokenLine := Geometry.BrokenLine Point
+    abbrev Polygon := HilbertAxioms2D.Polygon Point
 
     def someOutsidePoint(poly: Polygon): Point :=
       let x:= (poly.vertices.map (fun p => p.x)).min?

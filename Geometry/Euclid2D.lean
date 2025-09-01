@@ -51,7 +51,10 @@ namespace Geometry.Euclid2D
     (∃ Q: Point, OnSegment B Q C ∧ Q ∈ l) ∨ (∃ R: Point, OnSegment A R C ∧ R ∈ l)
 
 
-  noncomputable instance: HilbertAxioms2D Point Line where
+  noncomputable instance: HilbertAxioms2D Point where
+    Line := Line
+    mem_Line := by infer_instance
+
     Between := Between
     between_ne := between_ne
     extension_exists := extension_exists
@@ -67,8 +70,9 @@ namespace Geometry.Euclid2D
 
 
   section
-    abbrev BrokenLine := HilbertAxioms2D.BrokenLine (Point := Point) (Line := Line)
-    abbrev Polygon := HilbertAxioms2D.Polygon (Point := Point) (Line := Line)
+    abbrev Segment := Geometry.Segment Point
+    abbrev BrokenLine := Geometry.BrokenLine Point
+    abbrev Polygon := HilbertAxioms2D.Polygon Point
 
     axiom inside: Polygon → Point → Prop
     axiom outside: Polygon → Point → Prop
