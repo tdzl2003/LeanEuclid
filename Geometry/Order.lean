@@ -78,64 +78,64 @@ namespace Geometry.HilbertAxioms1D
 end Geometry.HilbertAxioms1D
 
 namespace Geometry.HilbertAxioms2D
-  variable {Point Line: Type}[Membership Point Line][G: HilbertAxioms2D Point Line]
+  variable {Point: Type}[G: HilbertAxioms2D Point]
 
-  theorem onSameSide.not_liesOn(l: Line)(a b: Point):
+  theorem onSameSide.not_liesOn(l: G.Line)(a b: Point):
       G.SameSideOfLine l a b → ¬ a ∈ l ∧ ¬ b ∈ l :=
   by
     sorry
 
-  theorem onOtherSide.not_liesOn(l: Line)(a b: Point):
+  theorem onOtherSide.not_liesOn(l: G.Line)(a b: Point):
       OtherSideOfLine l a b → ¬ a ∈ l ∧ ¬ b ∈  l :=
   by
     sorry
 
-  theorem onSameSide.not_onOtherSide(l: Line)(a b: Point):
+  theorem onSameSide.not_onOtherSide(l: G.Line)(a b: Point):
       SameSideOfLine l a b → ¬ OtherSideOfLine l a b :=
   by
     sorry
 
-  theorem onOtherSide.not_onSameSide(l: Line)(a b: Point):
+  theorem onOtherSide.not_onSameSide(l: G.Line)(a b: Point):
       OtherSideOfLine l a b → ¬ SameSideOfLine l a b :=
   by
     sorry
 
-  theorem onSameSide.not (l: Line)(a b: Point):
+  theorem onSameSide.not (l: G.Line)(a b: Point):
       ¬ SameSideOfLine l a b → a ∈ l ∨ b ∈ l ∨ OtherSideOfLine l a b:=
   by
     sorry
 
-  theorem onOtherSide.not (l: Line)(a b: Point):
+  theorem onOtherSide.not (l: G.Line)(a b: Point):
       ¬ OtherSideOfLine l a b → a ∈ l ∨ b ∈ l ∨ SameSideOfLine l a b :=
   by
     sorry
 
-  theorem onSameSide.reflex (l: Line)(a: Point):
+  theorem onSameSide.reflex (l: G.Line)(a: Point):
       SameSideOfLine l a a :=
   by
     sorry
 
-  theorem onOtherSide.not_reflex(l: Line)(a: Point):
+  theorem onOtherSide.not_reflex(l: G.Line)(a: Point):
       ¬ OtherSideOfLine l a a :=
   by
     sorry
 
-  theorem onSameSide.symm(l: Line)(a b: Point):
+  theorem onSameSide.symm(l: G.Line)(a b: Point):
       SameSideOfLine l a b → SameSideOfLine l b a :=
   by
     sorry
 
-  theorem onOtherSide.symm(l: Line)(a b: Point):
+  theorem onOtherSide.symm(l: G.Line)(a b: Point):
       OtherSideOfLine l a b → OtherSideOfLine l b a :=
   by
     sorry
 
-  theorem onSameSide.trans(l: Line)(a b c: Point):
+  theorem onSameSide.trans(l: G.Line)(a b c: Point):
       SameSideOfLine l a b → SameSideOfLine l b c → SameSideOfLine l a c :=
   by
     sorry
 
-  theorem onOtherSide.trans(a b c: Point)(h: a ≠ b)(l: Line):
+  theorem onOtherSide.trans(a b c: Point)(h: a ≠ b)(l: G.Line):
       OtherSideOfLine l a b → OtherSideOfLine l b c → SameSideOfLine l a c :=
   by
     sorry

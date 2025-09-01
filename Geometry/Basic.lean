@@ -20,15 +20,15 @@ namespace Geometry
       axiom II.2.1 If A and C are two points of a straight line, there exists at least one point B lying between A and C.
       This can be proved in 2D but is axiom for 1D.
     -/
-    between_exists(a c: Point): a ≠ c → ∃ d: Point, Between a c d
+    between_exists(a c: Point): a ≠ c → {b: Point // Between a b c}
 
     /--
       axiom II.2.2 If A and C are two points of a straight line, there exists at least one point D so situated that C lies Between A and D.
     -/
-    extension_exists(a c: Point): a ≠ c → ∃ d: Point, Between a c d
+    extension_exists(a c: Point): a ≠ c → {d: Point // Between a c d}
 
     /-- axiom I.8: There exist at least two points on a line. -/
-    line_exists_two_points: ∃ a b: Point, a ≠ b
+    line_exists_two_points: {s: Point × Point // s.1 ≠ s.2}
 
     OnSegment(a b c: Point): Prop := Between a b c ∨ b = a ∨ b = c
 
@@ -48,30 +48,35 @@ namespace Geometry
     between_ne(a b c: Point): Between a b c → a ≠ b ∨ b ≠ c
 
     /--
+      axiom II.1: If A, B, C are points of a straight line and B lies Between A and C, then B lies also Between C and A.
+    -/
+    between_symm(a b c: Point): Between a b c → Between c b a
+
+    /--
       axiom II.2.2 If A and C are two points of a straight line, there exists at least one point D so situated that C lies Between A and D.
     -/
-    extension_exists(a c: Point): a ≠ c → ∃ d: Point, Between a c d
+    extension_exists(a c: Point): a ≠ c → {d: Point // Between a c d}
 
     /-- axiom I.1: Two distinct points A and B always completely determine a straight line a. --/
-    mk_line(a b: Point)(h: a ≠ b): Line
+    mk_line(a b: Point)(h: a ≠ b): {l: Line // a ∈ l ∧ b ∈ l}
 
-    /-- axiom I.1: line a determined by points A and B should go throught them. --/
-    mk_line_liesOn(a b: Point)(h: a≠ b): a ∈  (mk_line a b h) ∧ b ∈ (mk_line a b h)
-
-    /-- axiom I.2: Any two distinct points of a straight line completely determine that line; that is, if AB = a and AC = a, where B ̸= C, then is also BC = a. -/
+    /-- axiom I.2: Any two distinct points of a straight line completely determine that line -/
     unique_line_from_two_points (a b: Point)(l: Line)(h:  a ≠ b) : a ∈ l → b ∈ l → l = mk_line a b h
 
     /-- axiom I.8: There exist at least two points on a line. -/
-    line_exists_two_points: ∀ l: Line, ∃ a b: Point, a ≠ b ∧ a ∈ l ∧ b ∈ l
+    line_exists_two_points(l: Line): {s: Point × Point // s.1 ≠ s.2 ∧ s.1 ∈ l ∧ s.2 ∈ l}
 
     /-- a b c is collinear -/
     Collinear (a b c : Point) : Prop := ∃ l : Line, a ∈ l ∧ b ∈ l ∧ c ∈ l
+
+    collinear_def(a b c :Point) : Collinear a b c ↔ ∃ l : Line, a ∈ l ∧ b ∈ l ∧ c ∈ l := by
+      simp only [Collinear]
 
     /-- If B is between A and C, then A, B, C are collinear. -/
     collinear_of_between(a b c: Point): Between a b c → Collinear a b c
 
     /-- axiom I.7.2: in every plane at least three points not lying in the same straight line -/
-    exists_three_noncollinear_points: ∃ a b c: Point, ¬Collinear a b c
+    exists_three_noncollinear_points: {s: Point × Point × Point // ¬Collinear s.1 s.2.1 s.2.2}
 
     OnSegment(a b c: Point): Prop := Between a b c ∨ b = a ∨ b = c
 
@@ -96,21 +101,23 @@ namespace Geometry
     between_ne(a b c: Point): Between a b c → a ≠ b ∨ b ≠ c
 
     /--
+      axiom II.1: If A, B, C are points of a straight line and B lies Between A and C, then B lies also Between C and A.
+    -/
+    between_symm(a b c: Point): Between a b c → Between c b a
+
+    /--
       axiom II.2.2 If A and C are two points of a straight line, there exists at least one point D so situated that C lies Between A and D.
     -/
-    extension_exists(a c: Point): a ≠ c → ∃ d: Point, Between a c d
+    extension_exists(a c: Point): a ≠ c → {d: Point // Between a c d}
 
     /-- axiom I.1: Two distinct points A and B always completely determine a straight line a. --/
-    mk_line(a b: Point)(h: a ≠ b): Line
-
-    /-- axiom I.1: line a determined by points A and B should go throught them. --/
-    mk_line_liesOn(a b: Point)(h: a≠ b): a ∈  (mk_line a b h) ∧ b ∈ (mk_line a b h)
+    mk_line(a b: Point)(h: a ≠ b): {l: Line // a ∈ l ∧ b ∈ l}
 
     /-- axiom I.2: Any two distinct points of a straight line completely determine that line; that is, if AB = a and AC = a, where B ̸= C, then is also BC = a. -/
     unique_line_from_two_points (a b: Point)(l: Line)(h:  a ≠ b) : a ∈ l → b ∈ l → l = mk_line a b h
 
     /-- axiom I.8: There exist at least two points on a line. -/
-    line_exists_two_points: ∀ l: Line, ∃ a b: Point, a ≠ b ∧ a ∈ l ∧ b ∈ l
+    line_exists_two_points(l: Line): {s: Point × Point // s.1 ≠ s.2 ∧ s.1 ∈ l ∧ s.2 ∈ l}
 
     /-- a b c is collinear -/
     Collinear (a b c : Point) : Prop := ∃ l : Line, a ∈ l ∧ b ∈ l ∧ c ∈ l
@@ -119,10 +126,11 @@ namespace Geometry
     collinear_of_between(a b c: Point): Between a b c → Collinear a b c
 
     /-- axiom I.7.2: in every plane at least three points not lying in the same straight line -/
-    exists_three_noncollinear_points(pl: Plane): ∃ a b c: Point, a∈pl ∧ b∈pl ∧ c∈pl ∧ ¬Collinear a b c
+    exists_three_noncollinear_points(pl: Plane):
+      {s: Point × Point × Point // s.1∈pl ∧ s.2.1∈pl ∧ s.2.2∈pl ∧ ¬Collinear s.1 s.2.1 s.2.2}
 
     /-- axiom I.3: Three points A, B, C not situated in the same straight line always completely determine a plane α.-/
-    mk_plane(a b c: Point)(h: ¬Collinear a b c): Plane
+    mk_plane(a b c: Point)(h: ¬Collinear a b c): {l: Plane // a ∈ l ∧ b ∈ l ∧ c ∈ l}
 
     OnSegment(a b c: Point): Prop := Between a b c ∨ b = a ∨ b = c
 
@@ -130,15 +138,9 @@ namespace Geometry
     straight line lying in the plane ABC and not passing through any of the points A,
     B, C. Then, if the straight line a passes through a point of the segment AB, it will
     also pass through either a point of the segment BC or a point of the segment AC.-/
-    pasch_axiom {A B C: Point}(h: ¬Collinear A B C)(l: Line)(h: l ⊆ (mk_plane A B C h)):
+    pasch_axiom {A B C: Point}(h: ¬Collinear A B C)(l: Line)(h: l ⊆ (mk_plane A B C h).val):
         (∃ P: Point, OnSegment A P B ∧ P ∈ l) →
         (∃ Q: Point, OnSegment B Q C ∧ Q ∈ l) ∨ (∃ R: Point, OnSegment A R C ∧ R ∈ l)
-
-    /-- axiom I.3: plane determined by three points should have them lied on -/
-    mk_plane_liesOn{a b c: Point}{h: ¬Collinear a b c}:
-      a ∈ (mk_plane a b c h) ∧
-      b ∈ (mk_plane a b c h) ∧
-      c ∈ (mk_plane a b c h)
 
     /-- axiom I.4: Any three points A, B, C of a plane α, which do not lie in the same straight line, completely determine that plane. -/
     unique_plane_from_three_points(a b c: Point)(pl: Plane)(h: ¬Collinear a b c):
@@ -151,16 +153,16 @@ namespace Geometry
     /-- axiom I.6: If two planes α, β have a point A in common, then they have at least a second point B in common.-/
     plane_intersection_exists_two_points(pl1 pl2: Plane)(h: pl1 ≠ pl2)(a: Point):
       a ∈ pl1 ∧ a ∈ pl2 →
-      ∃ b: Point, b ≠ a ∧ b ∈ pl1 ∧ b ∈ pl2
+      {b: Point // b ≠ a ∧ b ∈ pl1 ∧ b ∈ pl2}
 
     /-- axiom I.10: In every space R there exist at least four points not lying in the same plane.-/
-    space_exists_four_noncoplanar_points: ∃ a b c d: Point, ¬(∃ pl: Plane, a ∈ pl ∧ b ∈  pl ∧ c ∈ pl ∧ d ∈ pl)
+    space_exists_four_noncoplanar_points:
+      {s: Point × Point × Point × Point //  ¬(∃ pl: Plane, s.1 ∈ pl ∧ s.2.1 ∈ pl ∧ s.2.2.1 ∈ pl ∧ s.2.2.2 ∈ pl)}
 
   -- Membership instance for point on line in a plane
   instance {Point Line Plane: Type}[Membership Point Line][Membership Point Plane]{pl: Plane}:
       Membership {p: Point // p ∈ pl} {l: Line // l ⊆ pl} where
     mem (l: {l: Line // l ⊆ pl}) (p: {p: Point // p ∈ pl}) : Prop := p.val ∈ l.val
-
 
   section
     instance {Point: Type}[G: HilbertAxioms2D Point]: Membership Point (G.Line) := G.mem_Line
@@ -169,7 +171,6 @@ namespace Geometry
   end
 
 end Geometry
-
 
 namespace Geometry.HilbertAxioms2D
   variable {Point: Type}[G: HilbertAxioms2D Point]
@@ -181,37 +182,4 @@ namespace Geometry.HilbertAxioms2D
   /-- two point is on different side of a line. -/
   def OtherSideOfLine(l: G.Line)(a b: Point): Prop :=
     ∃ c: Point, G.Between a c b ∧ c ∈ l
-
-  /-- Induce a 1D Hilbert axioms structure on points lying on a line in 2D plane. -/
-  def onLine(l: G.Line):
-    let SubPointType := {p: Point // p ∈ l}
-    HilbertAxioms1D SubPointType := {
-      Between := fun a b c => G.Between a.val b.val c.val,
-      between_ne := by
-        simp only [Subtype.forall, Subtype.mk.injEq]
-        intro a ha b hb c hc h
-        simp only [ne_eq, Subtype.mk.injEq]
-        apply between_ne
-        exact h
-      between_symm := by
-        sorry
-      between_exists := by
-        sorry
-      extension_exists := by
-        sorry
-      line_exists_two_points := by
-        sorry
-    }
 end Geometry.HilbertAxioms2D
-
-namespace Geometry.HilbertAxioms3D
-   /-- Induce a 2D Hilbert axioms structure on points lying in 2D plane. -/
-  def onPlane{Point: Type}[G:HilbertAxioms3D Point](pl: G.Plane):
-    let SubPointType := {p: Point // p ∈ pl}
-    HilbertAxioms2D SubPointType := sorry
-
-  def onLine{Point: Type}[G:HilbertAxioms3D Point](l: G.Line):
-    let SubPointType := {p: Point // p ∈ l}
-    HilbertAxioms1D SubPointType := sorry
-
-end Geometry.HilbertAxioms3D
