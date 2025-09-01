@@ -27,18 +27,20 @@ namespace Geometry
     -/
     extension_exists(a c: Point): a ≠ c → ∃ d: Point, Between a c d
 
-    /-- b is On segment ac: Either between, or is one of the endpoint.-/
-    OnSegment(a b c: Point): Prop := Between a b c ∨ b = a ∨ b = c
-
     /-- axiom I.8: There exist at least two points on a line. -/
     line_exists_two_points: ∃ a b: Point, a ≠ b
+
+    OnSegment(a b c: Point): Prop := Between a b c ∨ b = a ∨ b = c
 
   def IsSubset{Point: Type}{α: Type}{β: Type}[Membership Point α][Membership Point β](S: α)(T: β): Prop :=
       ∀ p: Point, p ∈ S → p ∈ T
 
   scoped infix:99 "⊆" => IsSubset
 
-  class HilbertAxioms2D (Point Line: Type)[Membership Point Line] where
+  class HilbertAxioms2D (Point: Type) where
+    Line: Type
+    mem_Line: Membership Point Line
+
     /-- Between : b is Between a and c (exclusive) -/
     Between(a b c: Point): Prop
 
@@ -81,12 +83,12 @@ namespace Geometry
         (∃ P: Point, OnSegment A P B ∧ P ∈ l) →
         (∃ Q: Point, OnSegment B Q C ∧ Q ∈ l) ∨ (∃ R: Point, OnSegment A R C ∧ R ∈ l)
 
-  -- Membership instance for point on line in a plane
-  instance {Point Line Plane: Type}[Membership Point Line][Membership Point Plane]{pl: Plane}:
-      Membership {p: Point // p ∈ pl} {l: Line // l ⊆ pl} where
-    mem (l: {l: Line // l ⊆ pl}) (p: {p: Point // p ∈ pl}) : Prop := p.val ∈ l.val
+  class HilbertAxioms3D (Point: Type) where
+    Line: Type
+    mem_Line: Membership Point Line
+    Plane: Type
+    mem_Plane: Membership Point Plane
 
-  class HilbertAxioms3D (Point Line Plane: Type)[Membership Point Line][Membership Point Plane] where
     /-- Between : b is Between a and c (exclusive) -/
     Between(a b c: Point): Prop
 
@@ -119,10 +121,10 @@ namespace Geometry
     /-- axiom I.7.2: in every plane at least three points not lying in the same straight line -/
     exists_three_noncollinear_points(pl: Plane): ∃ a b c: Point, a∈pl ∧ b∈pl ∧ c∈pl ∧ ¬Collinear a b c
 
-    OnSegment(a b c: Point): Prop := Between a b c ∨ b = a ∨ b = c
-
     /-- axiom I.3: Three points A, B, C not situated in the same straight line always completely determine a plane α.-/
     mk_plane(a b c: Point)(h: ¬Collinear a b c): Plane
+
+    OnSegment(a b c: Point): Prop := Between a b c ∨ b = a ∨ b = c
 
     /-- axiom II.5: Let A, B, C be three points not lying in the same straight line and let a be a
     straight line lying in the plane ABC and not passing through any of the points A,
@@ -154,41 +156,58 @@ namespace Geometry
     /-- axiom I.10: In every space R there exist at least four points not lying in the same plane.-/
     space_exists_four_noncoplanar_points: ∃ a b c d: Point, ¬(∃ pl: Plane, a ∈ pl ∧ b ∈  pl ∧ c ∈ pl ∧ d ∈ pl)
 
+  -- Membership instance for point on line in a plane
+  instance {Point Line Plane: Type}[Membership Point Line][Membership Point Plane]{pl: Plane}:
+      Membership {p: Point // p ∈ pl} {l: Line // l ⊆ pl} where
+    mem (l: {l: Line // l ⊆ pl}) (p: {p: Point // p ∈ pl}) : Prop := p.val ∈ l.val
+
+  section
+    structure Segment(Point: Type) where
+      p1: Point
+      p2: Point
+
+    def Segment.isValid{Point}(s: Segment Point): Prop := s.p1 ≠ s.p2
+
+    instance {Point: Type}[G: HilbertAxioms1D Point]: Membership Point (Segment Point) where
+      mem (s: Segment Point) (p: Point) : Prop := G.OnSegment s.p1 p s.p2
+
+    instance {Point: Type}[G: HilbertAxioms2D Point]: Membership Point (Segment Point) where
+        mem (s: Segment Point) (p: Point) : Prop := G.Between s.p1 p s.p2 ∨ p = s.p1 ∨ p = s.p2
+
+    instance {Point: Type}[G: HilbertAxioms3D Point]: Membership Point (Segment Point) where
+        mem (s: Segment Point) (p: Point) : Prop := G.Between s.p1 p s.p2 ∨ p = s.p1 ∨ p = s.p2
+  end
+
+  section
+    instance {Point: Type}[G: HilbertAxioms2D Point]: Membership Point (G.Line) := G.mem_Line
+    instance {Point: Type}[G: HilbertAxioms3D Point]: Membership Point (G.Line) := G.mem_Line
+    instance {Point: Type}[G: HilbertAxioms3D Point]: Membership Point (G.Plane) := G.mem_Plane
+  end
+
 end Geometry
 
+
 namespace Geometry.HilbertAxioms2D
-  variable {Point: outParam Type}{Line: Type}[Membership Point Line][HilbertAxioms2D Point Line]
-
-  structure Segment{Line: Type}[Membership Point Line][HilbertAxioms2D Point Line] where
-    p1: Point
-    p2: Point
-
-  def Segment.isValid (s: Segment (Point := Point) (Line := Line)): Prop := s.p1 ≠ s.p2
-
-  def Segment.PointLiesOn(s: Segment (Point := Point) (Line := Line))(p: Point): Prop :=
-    OnSegment Line s.p1 p s.p2
-
-  instance : Membership Point (Segment (Point := Point) (Line := Line)) where
-    mem := Segment.PointLiesOn (Line := Line)
+  variable {Point: Type}[G: HilbertAxioms2D Point]
 
   /-- two point is on same side of a line. -/
-  def SameSideOfLine(l: Line)(a b: Point): Prop :=
-    ¬(∃ c: Point, OnSegment Line a c b ∧ c ∈ l)
+  def SameSideOfLine(l: G.Line)(a b: Point): Prop :=
+    ¬(∃ c: Point, G.OnSegment a c b ∧ c ∈ l)
 
   /-- two point is on different side of a line. -/
-  def OtherSideOfLine(l: Line)(a b: Point): Prop :=
-    ∃ c: Point, Between Line a c b ∧ c ∈ l
+  def OtherSideOfLine(l: G.Line)(a b: Point): Prop :=
+    ∃ c: Point, G.Between a c b ∧ c ∈ l
 
   /-- Induce a 1D Hilbert axioms structure on points lying on a line in 2D plane. -/
-  def onLine{Point Line: Type}[Membership Point Line][HilbertAxioms2D Point Line](l: Line):
+  def onLine(l: G.Line):
     let SubPointType := {p: Point // p ∈ l}
     HilbertAxioms1D SubPointType := {
-      Between := fun a b c => Between Line a.val b.val c.val,
+      Between := fun a b c => G.Between a.val b.val c.val,
       between_ne := by
         simp only [Subtype.forall, Subtype.mk.injEq]
         intro a ha b hb c hc h
         simp only [ne_eq, Subtype.mk.injEq]
-        apply between_ne (Line:=Line)
+        apply between_ne
         exact h
       between_symm := by
         sorry
@@ -203,12 +222,11 @@ end Geometry.HilbertAxioms2D
 
 namespace Geometry.HilbertAxioms3D
    /-- Induce a 2D Hilbert axioms structure on points lying in 2D plane. -/
-  def onPlane{Point Line Plane: Type}[Membership Point Line][Membership Point Plane][HilbertAxioms3D Point Line Plane](pl: Plane):
+  def onPlane{Point: Type}[G:HilbertAxioms3D Point](pl: G.Plane):
     let SubPointType := {p: Point // p ∈ pl}
-    let SubLineType := {l: Line // l ⊆ pl}
-    HilbertAxioms2D SubPointType SubLineType := sorry
+    HilbertAxioms2D SubPointType := sorry
 
-  def onLine{Point Line Plane: Type}[Membership Point Line][Membership Point Plane][HilbertAxioms3D Point Line Plane](l: Line):
+  def onLine{Point: Type}[G:HilbertAxioms3D Point](l: G.Line):
     let SubPointType := {p: Point // p ∈ l}
     HilbertAxioms1D SubPointType := sorry
 
