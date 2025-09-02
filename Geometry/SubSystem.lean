@@ -1,6 +1,7 @@
 import Geometry.Basic
 import Mathlib.Tactic.Use
 import Mathlib.Logic.Equiv.Defs
+import Mathlib.Tactic.DefEqTransformations
 
 namespace Geometry.HilbertAxioms1D
   def transfer {Point1 Point2 : Type} (e : Point2 ≃ Point1) (h1 : HilbertAxioms1D Point1) : HilbertAxioms1D Point2 :=
@@ -151,11 +152,15 @@ namespace Geometry.HilbertAxioms3D
         rw [Subtype.eq_iff]
         rw [G.unique_line_from_two_points a.val b.val l.val hne' ha hb]
         let ⟨l', hl'⟩ := G.mk_line a.val b.val hne'
-
-        sorry
+        split
+        rename_i l'
+        simp only
+        simp [Subtype.eq_iff] at l'
+        exact l'
 
       line_exists_two_points := by
         sorry,
+
       collinear_of_between := by
         sorry,
       exists_three_noncollinear_points :=
