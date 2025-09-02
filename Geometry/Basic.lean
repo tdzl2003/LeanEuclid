@@ -122,6 +122,9 @@ namespace Geometry
     /-- a b c is collinear -/
     Collinear (a b c : Point) : Prop := ∃ l : Line, a ∈ l ∧ b ∈ l ∧ c ∈ l
 
+    collinear_def(a b c :Point) : Collinear a b c ↔ ∃ l : Line, a ∈ l ∧ b ∈ l ∧ c ∈ l := by
+      simp only [Collinear]
+
     /-- If B is between A and C, then A, B, C are collinear. -/
     collinear_of_between(a b c: Point): Between a b c → Collinear a b c
 

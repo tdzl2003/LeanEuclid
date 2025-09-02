@@ -51,6 +51,9 @@ end Geometry.HilbertAxioms1D
 namespace Geometry.HilbertAxioms2D
   variable {Point: Type}[G: HilbertAxioms2D Point]
 
+  def between_exists(a b c: Point)(h: a ≠ c): {d: Point // G.Between a d c} :=
+    sorry
+
   /-- Induce a 1D Hilbert axioms structure on points lying on a line in 2D plane. -/
   def onLine(l: G.Line):
     HilbertAxioms1D {p: Point // p ∈ l} := {
@@ -101,15 +104,56 @@ namespace Geometry.HilbertAxioms3D
       mem_Line := {
         mem(h1 h2) := h2.val ∈ h1.val
       },
-      Between := sorry,
-      between_ne := by
-        sorry,
-      between_symm := by
-        sorry,
-      extension_exists := sorry,
-      mk_line := sorry,
+      Between(a b c) := Between a.val b.val c.val,
+      between_ne(a b c)(h) := by
+        have h := G.between_ne a.val b.val c.val h
+        rw [ne_eq, ←Subtype.eq_iff, ne_eq, ←Subtype.eq_iff, ← ne_eq, ← ne_eq] at h
+        exact h
+      between_symm(a b c h) := by
+        apply G.between_symm
+        exact h
+      extension_exists(a c)(h) :=
+        have ⟨d, hd⟩:= G.extension_exists a c (by rw [Subtype.coe_ne_coe]; exact h)
+
+        have hd1 : d ∈ pl := by
+          have h:= G.collinear_of_between a c d hd
+          rw [G.collinear_def] at h
+          obtain ⟨l, h1, h2, h3⟩ := h
+          have hl: l ⊆ pl := by
+            intro p hp
+            apply G.line_in_plane_if_two_points_in_plane a c
+            rw [Subtype.coe_ne_coe]; exact h
+            exact h1
+            exact h2
+            exact a.property
+            exact c.property
+            exact hp
+          apply hl
+          exact h3
+        ⟨⟨d, hd1⟩, hd⟩
+
+      mk_line(a c h) :=
+        let ⟨l, hl1, hl2⟩ := G.mk_line a.val c.val (by rw [Subtype.coe_ne_coe]; exact h)
+        have : l ⊆ pl := by
+          intro p hp
+          apply G.line_in_plane_if_two_points_in_plane a.val c.val l
+          rw [Subtype.coe_ne_coe]; exact h
+          exact hl1
+          exact hl2
+          exact a.property
+          exact c.property
+          exact hp
+        ⟨⟨l, this⟩, hl1, hl2⟩
+
       unique_line_from_two_points := by
-        sorry,
+        intros a b l hne ha hb
+        have hne': a.val ≠ b.val := by rw [Subtype.coe_ne_coe]; exact hne
+        rw [Subtype.eq_iff]
+        rw [G.unique_line_from_two_points a.val b.val l.val hne' ha hb]
+        let ⟨l', hl'⟩ := G.mk_line a.val b.val hne'
+
+        sorry
+
       line_exists_two_points := by
         sorry,
       collinear_of_between := by
