@@ -9,7 +9,7 @@ namespace Geometry
     Between(a b c: Point): Prop
 
     /-- Between relation is exclusive. -/
-    between_ne(a b c: Point): Between a b c → a ≠ b ∨ b ≠ c
+    between_ne(a b c: Point): Between a b c → a ≠ b ∧ b ≠ c
 
     /--
       axiom II.1: If A, B, C are points of a straight line and B lies Between A and C, then B lies also Between C and A.
@@ -45,7 +45,7 @@ namespace Geometry
     Between(a b c: Point): Prop
 
     /-- Between relation is exclusive. -/
-    between_ne(a b c: Point): Between a b c → a ≠ b ∨ b ≠ c
+    between_ne(a b c: Point): Between a b c → a ≠ b ∧ b ≠ c
 
     /--
       axiom II.1: If A, B, C are points of a straight line and B lies Between A and C, then B lies also Between C and A.
@@ -98,7 +98,7 @@ namespace Geometry
     Between(a b c: Point): Prop
 
     /-- Between relation is exclusive. -/
-    between_ne(a b c: Point): Between a b c → a ≠ b ∨ b ≠ c
+    between_ne(a b c: Point): Between a b c → a ≠ b ∧  b ≠ c
 
     /--
       axiom II.1: If A, B, C are points of a straight line and B lies Between A and C, then B lies also Between C and A.

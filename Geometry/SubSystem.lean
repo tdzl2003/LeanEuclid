@@ -52,7 +52,7 @@ end Geometry.HilbertAxioms1D
 namespace Geometry.HilbertAxioms2D
   variable {Point: Type}[G: HilbertAxioms2D Point]
 
-  def between_exists(a b c: Point)(h: a ≠ c): {d: Point // G.Between a d c} :=
+  def between_exists(a c: Point)(h: a ≠ c): {b: Point // G.Between a b c} :=
     sorry
 
   /-- Induce a 1D Hilbert axioms structure on points lying on a line in 2D plane. -/
@@ -70,8 +70,21 @@ namespace Geometry.HilbertAxioms2D
         intro a ha b hb c hc h
         apply G.between_symm
         exact h
-      between_exists := by
-        sorry
+      between_exists(a c h) :=
+        let ⟨b, hb⟩ := between_exists a.val c.val (by rw [ne_eq, Subtype.mk.injEq] at h; exact h)
+        have hb1 : b ∈ l := by
+          have h:= G.collinear_of_between a.val b c.val hb
+          rw [G.collinear_def] at h
+          obtain ⟨l', h1, h2, h3⟩ := h
+          rw [G.unique_line_from_two_points a.val c.val l]
+          rw [← G.unique_line_from_two_points a.val c.val l']
+          exact h2
+          rw [ne_eq, Subtype.mk.injEq] at h; exact h
+          exact h1
+          exact h3
+          exact a.property
+          exact c.property
+        ⟨⟨b, hb1⟩, hb⟩
       extension_exists(a' c')(hne: a' ≠ c') :=
         let ⟨a, ha⟩ := a'
         let ⟨c, hc⟩ := c'
@@ -158,15 +171,51 @@ namespace Geometry.HilbertAxioms3D
         simp [Subtype.eq_iff] at l'
         exact l'
 
-      line_exists_two_points := by
-        sorry,
+      line_exists_two_points(l) :=
+        let ⟨⟨a, b⟩, h1, h2, h3⟩ := G.line_exists_two_points l.val
+        have ha: a ∈ pl := by
+          apply l.property
+          exact h2
+        have hb: b ∈ pl := by
+          apply l.property
+          exact h3
+        ⟨⟨⟨a, ha⟩, ⟨b, hb⟩⟩, by
+          simp only [ne_eq, Subtype.mk.injEq, h1, not_false_eq_true, h2, h3, and_self]
+        ⟩
 
       collinear_of_between := by
-        sorry,
+        intro a b c h
+        have h1 := G.collinear_of_between a.val b.val c.val h
+        rw [G.collinear_def] at h1
+        obtain ⟨l, hl1, hl2, hl3⟩ := h1
+        have h2 := G.between_ne a.val b.val c.val h
+        have hl: l ⊆ pl := by
+          intro p hp
+          apply G.line_in_plane_if_two_points_in_plane a.val b.val l
+          exact h2.1
+          exact hl1
+          exact hl2
+          exact a.property
+          exact b.property
+          exact hp
+        use ⟨l, hl⟩
+        simp only [Membership.mem, hl1, hl2, hl3, and_self]
+
       exists_three_noncollinear_points :=
-        sorry,
+        let ⟨⟨a, b, c⟩, h1, h2, h3, h4⟩ := G.exists_three_noncollinear_points pl
+        ⟨⟨⟨a, h1⟩, ⟨b, h2⟩, ⟨c, h3⟩⟩, by
+          intro h
+          rw [G.collinear_def] at h4
+          obtain ⟨l, hl1, hl2, hl3⟩ := h
+          apply h4
+          use l.val
+          simp only at hl1 hl2 hl3
+          exact ⟨hl1, hl2, hl3⟩
+        ⟩
+
       pasch_axiom := by
-        sorry,
+        sorry
+
       collinear_def := by
         sorry
     }
