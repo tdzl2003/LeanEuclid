@@ -30,9 +30,8 @@ namespace Geometry.Analytic2D
     sorry
 
   /-- axiom II.2.2 If A and C are two points of a straight line, at least one point D so situated that C lies Between A and D.-/
-  theorem extension_exists(a c: Point):
-    a ≠ c → ∃ d: Point, Between a c d :=
-  by
+  def extension_exists(a c: Point)(hne: a ≠ c ):
+    {d: Point // Between a c d} :=
     sorry
 
   /-- Define a raw line by ax + by + c = 0-/
@@ -87,22 +86,16 @@ namespace Geometry.Analytic2D
   instance: Membership Point Line where
     mem := LiesOn
 
-  noncomputable def mk_line(a b: Point)(h: a≠b): Line :=
-    Quotient.mk'' <| LineRaw.mk_line a b h
-
-  theorem mk_line_liesOn(a b: Point)(h: a≠ b):
-      a ∈ (mk_line a b h) ∧ b ∈ (mk_line a b h) :=
-  by
-    sorry
+  noncomputable def mk_line(a b: Point)(h: a≠b): {l: Line // a ∈ l ∧ b ∈ l} :=
+    ⟨Quotient.mk'' <| LineRaw.mk_line a b h, by sorry⟩
 
   theorem unique_line_from_two_points(a b: Point)(l: Line)(h:  a ≠ b):
       a ∈ l → b ∈ l → l = mk_line a b h :=
   by
     sorry
 
-  theorem line_exists_two_points(l: Line):
-      ∃ a b: Point, a≠b ∧ a ∈ l ∧ b ∈ l :=
-  by
+  def line_exists_two_points(l: Line):
+      {s: Point × Point // s.1 ≠ s.2 ∧ s.1 ∈ l ∧ s.2 ∈ l} :=
     sorry
 
   def Collinear (a b c : Point) : Prop := ∃ l : Line, a ∈ l ∧ b ∈ l ∧ c ∈ l
@@ -119,9 +112,8 @@ namespace Geometry.Analytic2D
   by
     sorry
 
-  theorem exists_three_noncollinear_points:
-      ∃ a b c: Point, ¬Collinear a b c :=
-  by
+  def exists_three_noncollinear_points:
+      {s: Point × Point × Point // ¬Collinear s.1 s.2.1 s.2.2} :=
     sorry
 
   noncomputable instance: HilbertAxioms2D Point where
@@ -129,11 +121,12 @@ namespace Geometry.Analytic2D
     mem_Line := by infer_instance
     Between := Between
     between_ne := between_ne
+    between_symm := between_symm
     extension_exists := extension_exists
     mk_line := mk_line
-    mk_line_liesOn := mk_line_liesOn
     unique_line_from_two_points := unique_line_from_two_points
     line_exists_two_points := line_exists_two_points
+    collinear_def(a b c) := by simp only [Collinear]
     collinear_of_between := collinear_of_between
 
     exists_three_noncollinear_points := exists_three_noncollinear_points
