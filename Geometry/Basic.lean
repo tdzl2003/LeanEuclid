@@ -1,5 +1,4 @@
 
-
 -- Hilbert geometry definition, reference: https://www.gutenberg.org/files/17384/17384-pdf.pdf
 
 namespace Geometry
@@ -31,6 +30,9 @@ namespace Geometry
     line_exists_two_points: {s: Point × Point // s.1 ≠ s.2}
 
     OnSegment(a b c: Point): Prop := Between a b c ∨ b = a ∨ b = c
+
+    OnSegment_def(a b c: Point): OnSegment a b c ↔ Between a b c ∨ b = a ∨ b = c := by
+      simp only [OnSegment]
 
   def IsSubset{Point: Type}{α: Type}{β: Type}[Membership Point α][Membership Point β](S: α)(T: β): Prop :=
       ∀ p: Point, p ∈ S → p ∈ T
@@ -75,18 +77,25 @@ namespace Geometry
     /-- If B is between A and C, then A, B, C are collinear. -/
     collinear_of_between(a b c: Point): Between a b c → Collinear a b c
 
-    /-- axiom I.7.2: in every plane at least three points not lying in the same straight line -/
-    exists_three_noncollinear_points: {s: Point × Point × Point // ¬Collinear s.1 s.2.1 s.2.2}
+    /--
+      axiom I.7.2: in every plane at least three points not lying in the same straight line
+      addition: It's important to point out A≠B in axiom. otherwise it's not possible to prove ne_of_not_collinear
+    -/
+    exists_three_noncollinear_points: {s: Point × Point × Point //
+      [s.1, s.2.1, s.2.2].Pairwise (· ≠ ·)
+      ∧ ¬Collinear s.1 s.2.1 s.2.2}
 
     OnSegment(a b c: Point): Prop := Between a b c ∨ b = a ∨ b = c
+
+    OnSegment_def(a b c: Point): OnSegment a b c ↔ Between a b c ∨ b = a ∨ b = c := by
+      simp only [OnSegment]
 
     /-- axiom II.5: Let A, B, C be three points not lying in the same straight line and let a be a
     straight line lying in the plane ABC and not passing through any of the points A,
     B, C. Then, if the straight line a passes through a point of the segment AB, it will
     also pass through either a point of the segment BC or a point of the segment AC.-/
-    pasch_axiom {A B C: Point}(h: ¬Collinear A B C)(l: Line):
-        (∃ P: Point, OnSegment A P B ∧ P ∈ l) →
-        (∃ Q: Point, OnSegment B Q C ∧ Q ∈ l) ∨ (∃ R: Point, OnSegment A R C ∧ R ∈ l)
+    pasch_axiom {A B C: Point}(h: ¬Collinear A B C)(l: Line)(h2: ∃ P: Point, OnSegment A P B ∧ P ∈ l):
+        {Q: Point // (OnSegment B Q C ∨  OnSegment A Q C) ∧ Q ∈ l}
 
   class HilbertAxioms3D (Point: Type) where
     Line: Type
@@ -130,20 +139,26 @@ namespace Geometry
 
     /-- axiom I.7.2: in every plane at least three points not lying in the same straight line -/
     exists_three_noncollinear_points(pl: Plane):
-      {s: Point × Point × Point // s.1∈pl ∧ s.2.1∈pl ∧ s.2.2∈pl ∧ ¬Collinear s.1 s.2.1 s.2.2}
+      {s: Point × Point × Point //
+        s.1∈pl ∧ s.2.1∈pl ∧ s.2.2∈pl ∧
+        [s.1, s.2.1, s.2.2].Pairwise (· ≠ ·) ∧
+        ¬Collinear s.1 s.2.1 s.2.2
+      }
 
     /-- axiom I.3: Three points A, B, C not situated in the same straight line always completely determine a plane α.-/
     mk_plane(a b c: Point)(h: ¬Collinear a b c): {l: Plane // a ∈ l ∧ b ∈ l ∧ c ∈ l}
 
     OnSegment(a b c: Point): Prop := Between a b c ∨ b = a ∨ b = c
 
+    OnSegment_def(a b c: Point): OnSegment a b c ↔ Between a b c ∨ b = a ∨ b = c := by
+      simp only [OnSegment]
+
     /-- axiom II.5: Let A, B, C be three points not lying in the same straight line and let a be a
     straight line lying in the plane ABC and not passing through any of the points A,
     B, C. Then, if the straight line a passes through a point of the segment AB, it will
     also pass through either a point of the segment BC or a point of the segment AC.-/
-    pasch_axiom {A B C: Point}(h: ¬Collinear A B C)(l: Line)(h: l ⊆ (mk_plane A B C h).val):
-        (∃ P: Point, OnSegment A P B ∧ P ∈ l) →
-        (∃ Q: Point, OnSegment B Q C ∧ Q ∈ l) ∨ (∃ R: Point, OnSegment A R C ∧ R ∈ l)
+    pasch_axiom {A B C: Point}(h1: ¬Collinear A B C)(l: Line)(h2: l ⊆ (mk_plane A B C h1).val)(h3: ∃ P: Point, OnSegment A P B ∧ P ∈ l) :
+        {Q: Point // (OnSegment B Q C ∨  OnSegment A Q C) ∧ Q ∈ l}
 
     /-- axiom I.4: Any three points A, B, C of a plane α, which do not lie in the same straight line, completely determine that plane. -/
     unique_plane_from_three_points(a b c: Point)(pl: Plane)(h: ¬Collinear a b c):
@@ -158,9 +173,12 @@ namespace Geometry
       a ∈ pl1 ∧ a ∈ pl2 →
       {b: Point // b ≠ a ∧ b ∈ pl1 ∧ b ∈ pl2}
 
-    /-- axiom I.10: In every space R there exist at least four points not lying in the same plane.-/
+    /--
+      axiom I.10: In every space R there exist at least four points not lying in the same plane.
+      addition: It's important to point out A≠B in axiom. otherwise it's not possible to prove ne_of_noncoplanar
+    -/
     space_exists_four_noncoplanar_points:
-      {s: Point × Point × Point × Point //  ¬(∃ pl: Plane, s.1 ∈ pl ∧ s.2.1 ∈ pl ∧ s.2.2.1 ∈ pl ∧ s.2.2.2 ∈ pl)}
+      {s: Point × Point × Point × Point //  ¬(∃ pl: Plane, [s.1, s.2.1, s.2.2.1, s.2.2.2].Pairwise (· ≠ ·) ∧ s.1 ∈ pl ∧ s.2.1 ∈ pl ∧ s.2.2.1 ∈ pl ∧ s.2.2.2 ∈ pl)}
 
   -- Membership instance for point on line in a plane
   instance {Point Line Plane: Type}[Membership Point Line][Membership Point Plane]{pl: Plane}:

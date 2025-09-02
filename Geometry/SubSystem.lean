@@ -44,6 +44,9 @@ namespace Geometry.HilbertAxioms1D
         simp only [ne_eq, EmbeddingLike.apply_eq_iff_eq, a', b']
         exact h
       exact ⟨⟨a', b'⟩, hne⟩
+    OnSegment_def := by
+      intro a b c
+      simp only [OnSegment, h1.OnSegment_def]
   }
 
 end Geometry.HilbertAxioms1D
@@ -107,12 +110,55 @@ namespace Geometry.HilbertAxioms2D
       line_exists_two_points :=
         let ⟨⟨a, b⟩, ⟨h1, h2, h3⟩⟩ := G.line_exists_two_points l
         ⟨⟨⟨a, h2⟩, ⟨b, h3⟩⟩, by simp only [ne_eq, Subtype.mk.injEq]; exact h1⟩
+
+      OnSegment_def := by
+        intro a b c
+        simp only [Subtype.eq_iff]
     }
 end Geometry.HilbertAxioms2D
 
 namespace Geometry.HilbertAxioms3D
+  def mk_plane_through_line{Point: Type}[G:HilbertAxioms3D Point](l: G.Line):{pl: G.Plane // l ⊆ pl} :=
+    sorry
+
+  def mk_line_through_point_on_plane{Point: Type}[DecidableEq Point][G:HilbertAxioms3D Point]
+      {pl: G.Plane}(p: Point)(h: p ∈ pl):
+      {l: G.Line // l ⊆ pl ∧ p ∈ l} :=
+    let ⟨⟨A, B, C⟩, h1, h2, h3, h4, h5⟩  := G.exists_three_noncollinear_points pl
+    if hA : A = p then
+      have hB: p ≠ B := by
+        rw [← hA]
+        simp only [List.pairwise_cons, List.mem_cons, List.not_mem_nil, or_false,
+          forall_eq_or_imp, forall_eq, IsEmpty.forall_iff, implies_true, List.Pairwise.nil,
+          and_self, and_true] at h4
+        exact h4.1.1
+
+      let ⟨l, hl⟩ := G.mk_line p B hB
+      ⟨l, by
+          and_intros
+          . apply G.line_in_plane_if_two_points_in_plane p B l
+            exact hB
+            exact hl.1
+            exact hl.2
+            exact h
+            simp only at h2; exact h2
+          . exact hl.1
+        ⟩
+    else
+      let ⟨l, hl⟩ := G.mk_line A p hA
+      ⟨l, by
+          and_intros
+          . apply G.line_in_plane_if_two_points_in_plane A p l
+            exact hA
+            exact hl.1
+            exact hl.2
+            simp only at h1; exact h1
+            exact h
+          . exact hl.2
+        ⟩
+
    /-- Induce a 2D Hilbert axioms structure on points lying on a plane in 3D space. -/
-  def onPlane{Point: Type}[G:HilbertAxioms3D Point](pl: G.Plane):
+  def onPlane{Point: Type}[DecidableEq Point][G:HilbertAxioms3D Point](pl: G.Plane):
     HilbertAxioms2D {p: Point // p ∈ pl} := {
       Line: Type := {l: G.Line // l ⊆ pl},
       mem_Line := {
@@ -187,44 +233,88 @@ namespace Geometry.HilbertAxioms3D
         intro a b c h
         have h1 := G.collinear_of_between a.val b.val c.val h
         rw [G.collinear_def] at h1
-        obtain ⟨l, hl1, hl2, hl3⟩ := h1
-        have h2 := G.between_ne a.val b.val c.val h
-        have hl: l ⊆ pl := by
-          intro p hp
-          apply G.line_in_plane_if_two_points_in_plane a.val b.val l
-          exact h2.1
-          exact hl1
-          exact hl2
-          exact a.property
-          exact b.property
-          exact hp
-        use ⟨l, hl⟩
-        simp only [Membership.mem, hl1, hl2, hl3, and_self]
+        rw [collinear_def]
+        exact h1
 
       exists_three_noncollinear_points :=
-        let ⟨⟨a, b, c⟩, h1, h2, h3, h4⟩ := G.exists_three_noncollinear_points pl
+        let ⟨⟨a, b, c⟩, h1, h2, h3, h4, h5⟩ := G.exists_three_noncollinear_points pl
         ⟨⟨⟨a, h1⟩, ⟨b, h2⟩, ⟨c, h3⟩⟩, by
-          intro h
-          rw [G.collinear_def] at h4
-          obtain ⟨l, hl1, hl2, hl3⟩ := h
-          apply h4
-          use l.val
-          simp only at hl1 hl2 hl3
-          exact ⟨hl1, hl2, hl3⟩
+            simp only [ne_eq, List.pairwise_cons, List.mem_cons, List.not_mem_nil, or_false,
+              forall_eq_or_imp, Subtype.mk.injEq, forall_eq, IsEmpty.forall_iff, implies_true,
+              List.Pairwise.nil, and_self, and_true] at h4 ⊢
+            exact h4
+        , h5⟩
+
+      pasch_axiom{A B C}(h1 l h2) :=
+        have t1: pl = G.mk_plane A B C h1 := by
+          apply G.unique_plane_from_three_points A B C pl h1
+          exact A.property
+          exact B.property
+          exact C.property
+        have t2: l.val ⊆ (G.mk_plane A B C h1).val := by
+          rw [← t1]
+          exact l.property
+        have t3: (∃ P, G.OnSegment A P B ∧ P ∈ l.val) := by
+          let ⟨P, hP1, hP2⟩ := h2
+          use P
+          and_intros
+          . simp only at hP1
+            rw [G.OnSegment_def]
+            rw [Subtype.eq_iff, Subtype.eq_iff] at hP1
+            exact hP1
+          . exact hP2
+
+        let ⟨Q, hQ⟩ := G.pasch_axiom h1 l.val t2 t3
+        have hQ1: Q∈ pl := by
+          apply l.property
+          exact hQ.2
+
+        ⟨⟨Q, hQ1⟩, by
+            repeat rw [G.OnSegment_def] at hQ
+            simp only [Subtype.eq_iff];
+            exact hQ
         ⟩
 
-      pasch_axiom := by
-        sorry
-
       collinear_def := by
+        intro a b c
+        simp only [G.collinear_def, Subtype.exists, exists_and_left, exists_prop]
+        constructor
+        . intro ⟨l, h1, h2, h3⟩
+
+          by_cases h: a = c
+          . by_cases h': a = b
+            . -- case: a=b=c, choose any line through a on plane pl
+              let ⟨l, h1, h2⟩ := mk_line_through_point_on_plane a.val a.property
+              use l
+              simp only [h2, ← h', ← h, and_true, true_and]
+              exact h1
+            . use l
+              simp only [h1, h2, h3, and_true, true_and]
+              apply G.line_in_plane_if_two_points_in_plane a.val b.val l
+              rw [Subtype.coe_ne_coe]; exact h'
+              exact h1
+              exact h2
+              exact a.property
+              exact b.property
+          .
+            use l
+            simp only [h1, h2, h3, and_true, true_and]
+            apply G.line_in_plane_if_two_points_in_plane a.val c.val l
+            rw [Subtype.coe_ne_coe]; exact h
+            exact h1
+            exact h3
+            exact a.property
+            exact c.property
+
+        . intro ⟨l, h1, h2, h3, h4⟩
+          use l
+
+      OnSegment_def := by
         sorry
     }
 
-  def mk_plane_through_line{Point: Type}[G:HilbertAxioms3D Point](l: G.Line):{pl: G.Plane // l ⊆ pl} :=
-    sorry
-
   /-- Induce a 1D Hilbert axioms structure on points lying on a line in 3D space. -/
-  def onLine{Point: Type}[G:HilbertAxioms3D Point](l: G.Line):
+  def onLine{Point: Type}[DecidableEq Point][G:HilbertAxioms3D Point](l: G.Line):
     HilbertAxioms1D {p: Point // p ∈ l} :=
       let SubPointType := {p: Point // p ∈ l}
       let pl := mk_plane_through_line l
