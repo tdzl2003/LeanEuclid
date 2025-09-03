@@ -102,6 +102,7 @@ namespace Geometry
     mem_Line: Membership Point Line
     Plane: Type
     mem_Plane: Membership Point Plane
+    plane_exists: Nonempty Plane
 
     /-- Between : b is Between a and c (exclusive) -/
     Between(a b c: Point): Prop
@@ -178,7 +179,7 @@ namespace Geometry
       addition: It's important to point out A≠B in axiom. otherwise it's not possible to prove ne_of_noncoplanar
     -/
     space_exists_four_noncoplanar_points:
-      {s: Point × Point × Point × Point //  ¬(∃ pl: Plane, [s.1, s.2.1, s.2.2.1, s.2.2.2].Pairwise (· ≠ ·) ∧ s.1 ∈ pl ∧ s.2.1 ∈ pl ∧ s.2.2.1 ∈ pl ∧ s.2.2.2 ∈ pl)}
+      {s: Point × Point × Point × Point //  [s.1, s.2.1, s.2.2.1, s.2.2.2].Pairwise (· ≠ ·) ∧ ¬(∃ pl: Plane, s.1 ∈ pl ∧ s.2.1 ∈ pl ∧ s.2.2.1 ∈ pl ∧ s.2.2.2 ∈ pl)}
 
   -- Membership instance for point on line in a plane
   instance {Point Line Plane: Type}[Membership Point Line][Membership Point Plane]{pl: Plane}:

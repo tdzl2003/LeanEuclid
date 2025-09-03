@@ -118,8 +118,33 @@ namespace Geometry.HilbertAxioms2D
 end Geometry.HilbertAxioms2D
 
 namespace Geometry.HilbertAxioms3D
-  def mk_plane_through_line{Point: Type}[G:HilbertAxioms3D Point](l: G.Line):{pl: G.Plane // l ⊆ pl} :=
-    sorry
+  def noncollinear_of_noncoplanar{Point: Type}[G:HilbertAxioms3D Point]{A B C D: Point}
+    (h: ¬(∃ pl: G.Plane, A ∈ pl ∧ B ∈ pl ∧ C ∈ pl ∧ D ∈ pl)): ¬ Collinear A B C:=
+    by
+      sorry
+
+  def mk_plane_through_line{Point: Type}[G:HilbertAxioms3D Point](l: G.Line)[(p: Point) → Decidable (p ∈ l)]:{pl: G.Plane // l ⊆ pl} :=
+    let ⟨⟨A, B, C, D⟩ , h1, h2⟩ := G.space_exists_four_noncoplanar_points
+    if hA: A ∈ l then
+      have hAB: A ≠ B := by
+        simp only [ne_eq, List.pairwise_cons, List.mem_cons, List.not_mem_nil, or_false,
+          forall_eq_or_imp, forall_eq, IsEmpty.forall_iff, implies_true, List.Pairwise.nil,
+          and_self, and_true] at h1
+        exact h1.1.1
+      if hB: B ∈ l then
+        have hl: l = mk_line A B hAB := by
+          sorry
+        have hABC:= noncollinear_of_noncoplanar h2
+        have pl := G.mk_plane A B C hABC
+        ⟨pl, by
+          apply G.line_in_plane_if_two_points_in_plane A B l pl hAB hA hB
+          exact pl.property.1
+          exact pl.property.2.1
+        ⟩
+      else
+        sorry
+    else
+      sorry
 
   def mk_line_through_point_on_plane{Point: Type}[DecidableEq Point][G:HilbertAxioms3D Point]
       {pl: G.Plane}(p: Point)(h: p ∈ pl):
