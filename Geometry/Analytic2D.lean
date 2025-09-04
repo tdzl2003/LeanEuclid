@@ -19,7 +19,7 @@ namespace Geometry.Analytic2D
 
   /-- Between relation is exclusive. -/
   theorem between_ne(a b c: Point):
-    Between a b c → a ≠ b ∨ b ≠ c :=
+    Between a b c → a ≠ b ∧ b ≠ c :=
   by
     sorry
 
@@ -106,14 +106,14 @@ namespace Geometry.Analytic2D
   by
     sorry
 
-  theorem pasch_axiom {A B C: Point}(h: ¬Collinear A B C)(l: Line):
+  def pasch_axiom {A B C: Point}(h: ¬Collinear A B C)(l: Line):
       (∃ P: Point, OnSegment A P B ∧ P ∈ l) →
-      (∃ Q: Point, OnSegment B Q C ∧ Q ∈ l) ∨ (∃ R: Point, OnSegment A R C ∧ R ∈ l) :=
+      {Q: Point // (OnSegment B Q C ∨  OnSegment A Q C) ∧ Q ∈ l} :=
   by
     sorry
 
   def exists_three_noncollinear_points:
-      {s: Point × Point × Point // ¬Collinear s.1 s.2.1 s.2.2} :=
+      {s: Point × Point × Point // [s.1, s.2.1, s.2.2].Pairwise (· ≠ ·) ∧ ¬Collinear s.1 s.2.1 s.2.2} :=
     sorry
 
   noncomputable instance: HilbertAxioms2D Point where
@@ -131,6 +131,7 @@ namespace Geometry.Analytic2D
 
     exists_three_noncollinear_points := exists_three_noncollinear_points
     pasch_axiom := pasch_axiom
+    OnSegment_def(a b c) := by simp only [OnSegment]
 
   section
     abbrev Segment := Geometry.Segment Point
