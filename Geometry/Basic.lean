@@ -124,7 +124,7 @@ namespace Geometry
     mk_line(a b: Point)(h: a ≠ b): {l: Line // a ∈ l ∧ b ∈ l}
 
     /-- axiom I.2: Any two distinct points of a straight line completely determine that line; that is, if AB = a and AC = a, where B ̸= C, then is also BC = a. -/
-    unique_line_from_two_points (a b: Point)(l: Line)(h:  a ≠ b) : a ∈ l → b ∈ l → l = mk_line a b h
+    unique_line_from_two_points(a b: Point)(l: Line)(h:  a ≠ b) : a ∈ l → b ∈ l → l = mk_line a b h
 
     /-- axiom I.8: There exist at least two points on a line. -/
     line_exists_two_points(l: Line): {s: Point × Point // s.1 ≠ s.2 ∧ s.1 ∈ l ∧ s.2 ∈ l}

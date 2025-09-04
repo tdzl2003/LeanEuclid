@@ -2,6 +2,7 @@ import Geometry.Basic
 import Mathlib.Tactic.Use
 import Mathlib.Logic.Equiv.Defs
 import Mathlib.Tactic.DefEqTransformations
+import Mathlib.Tactic.Contrapose
 
 namespace Geometry.HilbertAxioms1D
   def transfer {Point1 Point2 : Type} (e : Point2 ≃ Point1) (h1 : HilbertAxioms1D Point1) : HilbertAxioms1D Point2 :=
@@ -118,33 +119,127 @@ namespace Geometry.HilbertAxioms2D
 end Geometry.HilbertAxioms2D
 
 namespace Geometry.HilbertAxioms3D
-  def noncollinear_of_noncoplanar{Point: Type}[G:HilbertAxioms3D Point]{A B C D: Point}
-    (h: ¬(∃ pl: G.Plane, A ∈ pl ∧ B ∈ pl ∧ C ∈ pl ∧ D ∈ pl)): ¬ Collinear A B C:=
-    by
-      sorry
+  def not_collinear{Point: Type}[G:HilbertAxioms3D Point]{A B C: Point}(hne: A≠B):
+    ¬ G.Collinear A B C ↔ ∃ l: G.Line, A ∈ l ∧ B ∈ l ∧ C ∉ l :=
+  by
+    rw [G.collinear_def]
+    constructor
+    . rw [not_exists]
+      intro h
+      let l := mk_line A B hne
+      use l
+      have h:=h l
+      simp only [l.property, true_and] at h ⊢
+      exact h
+    . intro ⟨l, hA, hB, hC⟩
+      intro ⟨l',hA',hB',hC'⟩
+      have : l' = mk_line A B hne := by
+        apply G.unique_line_from_two_points A B l' hne hA' hB'
+      rw [this] at hC'
+      have : l = mk_line A B hne := by
+        apply G.unique_line_from_two_points A B l hne hA hB
+      rw [← this] at hC'
+      apply hC hC'
 
-  def mk_plane_through_line{Point: Type}[G:HilbertAxioms3D Point](l: G.Line)[(p: Point) → Decidable (p ∈ l)]:{pl: G.Plane // l ⊆ pl} :=
-    let ⟨⟨A, B, C, D⟩ , h1, h2⟩ := G.space_exists_four_noncoplanar_points
-    if hA: A ∈ l then
-      have hAB: A ≠ B := by
-        simp only [ne_eq, List.pairwise_cons, List.mem_cons, List.not_mem_nil, or_false,
-          forall_eq_or_imp, forall_eq, IsEmpty.forall_iff, implies_true, List.Pairwise.nil,
-          and_self, and_true] at h1
-        exact h1.1.1
-      if hB: B ∈ l then
-        have hl: l = mk_line A B hAB := by
-          sorry
-        have hABC:= noncollinear_of_noncoplanar h2
-        have pl := G.mk_plane A B C hABC
+  theorem exists_point_not_on_line{Point: Type}[G:HilbertAxioms3D Point]
+    (l: G.Line): ∃ p: Point, p ∉ l :=
+  by
+    let pl' := G.plane_exists.some
+    let ⟨⟨A,B,C⟩, _,_,_,hne, hnc⟩ := G.exists_three_noncollinear_points pl'
+    by_cases hA': A∈ l
+    . by_cases hB': B ∈ l
+      . have hne: A≠B := by
+          simp only [List.pairwise_cons, List.mem_cons, List.not_mem_nil, or_false,
+            forall_eq_or_imp, forall_eq, IsEmpty.forall_iff, implies_true, List.Pairwise.nil,
+            and_self, and_true] at hne
+          exact hne.1.1
+        have hC': C ∉ l := by
+          intro h
+          apply hnc
+          have : l = G.mk_line A B hne := by
+            apply G.unique_line_from_two_points A B l hne hA' hB'
+          rw [collinear_def]
+          use l
+        use C
+      . use B
+    . use A
+
+  theorem coplannar_of_collinear{Point: Type}[G:HilbertAxioms3D Point]
+    (l: G.Line)(D: Point): ∃ pl: G.Plane, l ⊆ pl ∧ D ∈ pl :=
+  by
+    let ⟨⟨P, Q⟩, hne, hP, hQ⟩  := G.line_exists_two_points l
+    by_cases h2: D ∈ l
+    . have ⟨R, hR⟩ := exists_point_not_on_line l
+      have hPQR := (not_collinear hne).mpr (by use l)
+      have ⟨pl, hPl⟩ := G.mk_plane P Q R hPQR
+      use pl
+      have : l ⊆ pl := by
+        apply G.line_in_plane_if_two_points_in_plane
+        exact hne
+        exact hP
+        exact hQ
+        exact hPl.1
+        exact hPl.2.1
+      and_intros
+      . exact this
+      . apply this
+        exact h2
+    . let ⟨pl, hpl⟩ := G.mk_plane P Q D (by rw [not_collinear]; use l; apply hne)
+      use pl
+      simp only [hpl, and_true]
+      apply G.line_in_plane_if_two_points_in_plane P Q l pl hne hP hQ hpl.1 hpl.2.1
+
+  theorem noncollinear_of_noncoplanar{Point: Type}[G:HilbertAxioms3D Point]{A B C D: Point}:
+     ¬(∃ pl: G.Plane, A ∈ pl ∧ B ∈ pl ∧ C ∈ pl ∧ D ∈ pl) →  ¬ Collinear A B C:=
+  by
+    contrapose
+    rw [not_not, not_not]
+    intro h
+    rw [G.collinear_def] at h
+    let ⟨l, h⟩ := h
+    have ⟨pl, hl, hD⟩ := coplannar_of_collinear l D
+    use pl
+    simp only [hD, and_true]
+    and_intros
+    all_goals apply hl; simp only [h]
+
+
+  def mk_plane_through_line{Point: Type}[G:HilbertAxioms3D Point](l: G.Line)[(p: Point) → Decidable (p ∈ l)]:
+    {pl: G.Plane // l ⊆ pl} :=
+      let ⟨⟨P,Q⟩, hne, hP, hQ⟩ := G.line_exists_two_points l
+      let f1(A:Point)(hA: ¬A∈l):{pl: G.Plane // l ⊆ pl} :=
+        have hPQA: ¬ Collinear P Q A := by
+          apply (not_collinear hne).mpr
+          use l
+        let pl := G.mk_plane P Q A hPQA
         ⟨pl, by
-          apply G.line_in_plane_if_two_points_in_plane A B l pl hAB hA hB
+          apply G.line_in_plane_if_two_points_in_plane P Q l pl hne hP hQ
           exact pl.property.1
           exact pl.property.2.1
         ⟩
+
+      let ⟨⟨A, B, C, D⟩ , h1, h2⟩ := G.space_exists_four_noncoplanar_points
+      if hA: A ∈ l then
+        have hAB: A ≠ B := by
+          simp only [ne_eq, List.pairwise_cons, List.mem_cons, List.not_mem_nil, or_false,
+            forall_eq_or_imp, forall_eq, IsEmpty.forall_iff, implies_true, List.Pairwise.nil,
+            and_self, and_true] at h1
+          exact h1.1.1
+        if hB: B ∈ l then
+          have hl: l = mk_line A B hAB := by
+            apply G.unique_line_from_two_points A B l hAB hA hB
+          have hABC:= noncollinear_of_noncoplanar h2
+          let pl := G.mk_plane A B C hABC
+          ⟨pl, by
+            apply G.line_in_plane_if_two_points_in_plane A B l pl hAB hA hB
+            exact pl.property.1
+            exact pl.property.2.1
+          ⟩
+        else
+          f1 B hB
       else
-        sorry
-    else
-      sorry
+        f1 A hA
+
 
   def mk_line_through_point_on_plane{Point: Type}[DecidableEq Point][G:HilbertAxioms3D Point]
       {pl: G.Plane}(p: Point)(h: p ∈ pl):
@@ -334,12 +429,12 @@ namespace Geometry.HilbertAxioms3D
         . intro ⟨l, h1, h2, h3, h4⟩
           use l
 
-      OnSegment_def := by
-        sorry
+      OnSegment_def(a b c) := by
+        simp only [OnSegment]
     }
 
   /-- Induce a 1D Hilbert axioms structure on points lying on a line in 3D space. -/
-  def onLine{Point: Type}[DecidableEq Point][G:HilbertAxioms3D Point](l: G.Line):
+  def onLine{Point: Type}[DecidableEq Point][G:HilbertAxioms3D Point](l: G.Line)[(p: Point) → Decidable (p ∈ l)]:
     HilbertAxioms1D {p: Point // p ∈ l} :=
       let SubPointType := {p: Point // p ∈ l}
       let pl := mk_plane_through_line l
