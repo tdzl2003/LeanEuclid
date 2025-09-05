@@ -135,7 +135,12 @@ namespace Geometry.HilbertAxioms2D
     have : ∃ p: Point, p ∈ l1 ∧ p ∈ l2 := by
       sorry
 
-    sorry
+    let ⟨b, hp1, hp2⟩ := G.mk_line_intersection this
+
+    have hfinal: Between a b c := by
+      sorry
+
+    ⟨b, hfinal⟩
 
   /-- Induce a 1D Hilbert axioms structure on points lying on a line in 2D plane. -/
   def onLine(l: G.Line):
@@ -433,6 +438,10 @@ namespace Geometry.HilbertAxioms3D
         simp only
         simp [Subtype.eq_iff] at l'
         exact l'
+
+      mk_line_intersection{l1 l2}(h) :=
+        let ⟨p, hp⟩:= G.mk_line_intersection l1 l2 (by let ⟨p, hp⟩:= h; use p; simp only at hp; exact hp)
+        ⟨⟨p, by apply l1.prop; exact hp.1⟩, hp⟩
 
       line_exists_two_points(l) :=
         let ⟨⟨a, b⟩, h1, h2, h3⟩ := G.line_exists_two_points l.val
