@@ -4,6 +4,8 @@
 namespace Geometry
 
   class HilbertAxioms1D (Point: Type) where
+    instDecidableEq: DecidableEq Point
+
     /-- Between : b is Between a and c (exclusive) -/
     Between(a b c: Point): Prop
 
@@ -23,8 +25,9 @@ namespace Geometry
 
     /--
       axiom II.2.2 If A and C are two points of a straight line, there exists at least one point D so situated that C lies Between A and D.
+      Additional constraints: D ≠ A
     -/
-    extension_exists(a c: Point): a ≠ c → {d: Point // Between a c d}
+    extension_exists(a c: Point): a ≠ c → {d: Point // d ≠ a ∧ Between a c d}
 
     /-- axiom I.8: There exist at least two points on a line. -/
     line_exists_two_points: {s: Point × Point // s.1 ≠ s.2}
@@ -40,8 +43,11 @@ namespace Geometry
   scoped infix:99 "⊆" => IsSubset
 
   class HilbertAxioms2D (Point: Type) where
+    instDecidableEq: DecidableEq Point
+
     Line: Type
-    mem_Line: Membership Point Line
+    instMemLine: Membership Point Line
+    instDecidableMemLine: (l: Line)→(p: Point) → Decidable (p ∈ l)
 
     /-- Between : b is Between a and c (exclusive) -/
     Between(a b c: Point): Prop
@@ -56,11 +62,16 @@ namespace Geometry
 
     /--
       axiom II.2.2 If A and C are two points of a straight line, there exists at least one point D so situated that C lies Between A and D.
+      Additional constraints: D ≠ A, which is required to prove between_exists
+      TODO: can we remove this constraint and prove one D' ≠ A exists? Maybe it's a circular argument
     -/
-    extension_exists(a c: Point): a ≠ c → {d: Point // Between a c d}
+    extension_exists(a c: Point): a ≠ c → {d: Point // d ≠ a ∧ Between a c d}
 
     /-- axiom I.1: Two distinct points A and B always completely determine a straight line a. --/
     mk_line(a b: Point)(h: a ≠ b): {l: Line // a ∈ l ∧ b ∈ l}
+
+    /-- construction axiom: If there's two line with common point, we can construct it. -/
+    mk_line_intersection(l1 l2: Line)(e: ∃ p, p∈l1 ∧ p ∈ l2) : {p: Point // p ∈ l1 ∧ p ∈ l2}
 
     /-- axiom I.2: Any two distinct points of a straight line completely determine that line -/
     unique_line_from_two_points (a b: Point)(l: Line)(h:  a ≠ b) : a ∈ l → b ∈ l → l = mk_line a b h
@@ -98,11 +109,16 @@ namespace Geometry
         {Q: Point // (OnSegment B Q C ∨  OnSegment A Q C) ∧ Q ∈ l}
 
   class HilbertAxioms3D (Point: Type) where
+    instDecidableEq: DecidableEq Point
+
     Line: Type
-    mem_Line: Membership Point Line
+    instMemLine: Membership Point Line
+    instDecidableMemLine: (l: Line)→(p: Point) → Decidable (p ∈ l)
+
     Plane: Type
-    mem_Plane: Membership Point Plane
-    plane_exists: Nonempty Plane
+    instMemPlane: Membership Point Plane
+    instPlaneNonEmpty: Nonempty Plane
+
 
     /-- Between : b is Between a and c (exclusive) -/
     Between(a b c: Point): Prop
@@ -117,14 +133,18 @@ namespace Geometry
 
     /--
       axiom II.2.2 If A and C are two points of a straight line, there exists at least one point D so situated that C lies Between A and D.
+      Additional constraints: D ≠ A,
     -/
-    extension_exists(a c: Point): a ≠ c → {d: Point // Between a c d}
+    extension_exists(a c: Point): a ≠ c → {d: Point // d ≠ a ∧ Between a c d}
 
     /-- axiom I.1: Two distinct points A and B always completely determine a straight line a. --/
     mk_line(a b: Point)(h: a ≠ b): {l: Line // a ∈ l ∧ b ∈ l}
 
     /-- axiom I.2: Any two distinct points of a straight line completely determine that line; that is, if AB = a and AC = a, where B ̸= C, then is also BC = a. -/
     unique_line_from_two_points(a b: Point)(l: Line)(h:  a ≠ b) : a ∈ l → b ∈ l → l = mk_line a b h
+
+    /-- construction axiom: If there's two line with common point, we can construct it. -/
+    mk_line_intersection(l1 l2: Line)(e: ∃ p, p∈l1 ∧ p ∈ l2) : {p: Point // p ∈ l1 ∧ p ∈ l2}
 
     /-- axiom I.8: There exist at least two points on a line. -/
     line_exists_two_points(l: Line): {s: Point × Point // s.1 ≠ s.2 ∧ s.1 ∈ l ∧ s.2 ∈ l}
@@ -186,12 +206,14 @@ namespace Geometry
       Membership {p: Point // p ∈ pl} {l: Line // l ⊆ pl} where
     mem (l: {l: Line // l ⊆ pl}) (p: {p: Point // p ∈ pl}) : Prop := p.val ∈ l.val
 
-  section
-    instance {Point: Type}[G: HilbertAxioms2D Point]: Membership Point (G.Line) := G.mem_Line
-    instance {Point: Type}[G: HilbertAxioms3D Point]: Membership Point (G.Line) := G.mem_Line
-    instance {Point: Type}[G: HilbertAxioms3D Point]: Membership Point (G.Plane) := G.mem_Plane
-  end
-
+  attribute [instance] HilbertAxioms1D.instDecidableEq
+  attribute [instance] HilbertAxioms2D.instDecidableEq
+  attribute [instance] HilbertAxioms2D.instMemLine
+  attribute [instance] HilbertAxioms2D.instDecidableMemLine
+  attribute [instance] HilbertAxioms3D.instDecidableEq
+  attribute [instance] HilbertAxioms3D.instMemLine
+  attribute [instance] HilbertAxioms3D.instDecidableMemLine
+  attribute [instance] HilbertAxioms3D.instMemPlane
 end Geometry
 
 namespace Geometry.HilbertAxioms2D

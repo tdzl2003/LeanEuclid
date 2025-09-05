@@ -7,6 +7,11 @@ import Mathlib.Tactic.Contrapose
 namespace Geometry.HilbertAxioms1D
   def transfer {Point1 Point2 : Type} (e : Point2 ≃ Point1) (h1 : HilbertAxioms1D Point1) : HilbertAxioms1D Point2 :=
   {
+    instDecidableEq(a b) :=
+      let v := h1.instDecidableEq (e a) (e b)
+      match v with
+      | isFalse h => Decidable.isFalse (by rw [Equiv.apply_eq_iff_eq] at h;exact h)
+      | isTrue h => Decidable.isTrue (by rw [Equiv.apply_eq_iff_eq] at h;exact h)
     Between := fun a b c => h1.Between (e a) (e b) (e c)
     between_ne := by
       intro a b c h
@@ -26,8 +31,7 @@ namespace Geometry.HilbertAxioms1D
         exact hne
       let ⟨c, hc⟩ := h1.between_exists a1 b1 this
       exact ⟨e.symm c, by simp only [Equiv.apply_symm_apply]; exact hc⟩
-    extension_exists := by
-      intro a c hne
+    extension_exists(a c hne) :=
       let a1 := e a
       let c1 := e c
       have hne1 : a1 ≠ c1 := by
@@ -35,8 +39,18 @@ namespace Geometry.HilbertAxioms1D
         apply hne
         apply e.injective
         exact heq
-      let ⟨b, hb⟩ := h1.extension_exists a1 c1 hne1
-      exact ⟨e.symm b, by simp only [Equiv.apply_symm_apply]; exact hb⟩
+      let ⟨b1, hb1, hb2⟩ := h1.extension_exists a1 c1 hne1
+      let b := e.symm b1
+
+      ⟨b, by
+        and_intros
+        . unfold b
+          rw [show a = e.symm a1 by simp only [Equiv.symm_apply_apply, a1]]
+          rw [ne_eq, Equiv.symm_apply_eq, Equiv.symm_apply_apply]
+          exact hb1
+        . rw [show e b = b1 by simp only [Equiv.apply_symm_apply, b]]
+          exact hb2
+      ⟩
     line_exists_two_points := by
       let ⟨⟨a1, b1⟩, h⟩ := h1.line_exists_two_points
       let a' := e.symm a1
@@ -79,15 +93,11 @@ namespace Geometry.HilbertAxioms2D
     else
       ⟨A, hA⟩
 
-  -- TODO: Can we prove this? or it should be added to axiom system?
-  theorem a_ne_c_of_between{a b c: Point}(h: Between a b c): a ≠ c := by
-    sorry
-
-  theorem lies_on_mk_line_of_between{a b c: Point}{p}(h: Between a b c): b ∈ (mk_line a c p).val :=
+  theorem lies_on_mk_line_of_between{a b c: Point}(hne: a≠c)(h: Between a b c): b ∈ (mk_line a c hne).val :=
   by
     sorry
 
-  def between_exists[(l: G.Line)→(p: Point) → Decidable (p ∈ l)](a c: Point)(hne: a ≠ c): {b: Point // G.Between a b c} :=
+  def between_exists(a c: Point)(hne: a ≠ c): {b: Point // G.Between a b c} :=
     let ⟨l1, ha1, hc1⟩ := G.mk_line a c hne
     -- 根据公理I.7.2，直线外恒有一点E
     let ⟨e, he1⟩ := point_outside_line l1
@@ -100,7 +110,7 @@ namespace Geometry.HilbertAxioms2D
       exact ha1
 
     -- 根据公理II.2.2，直线AE上有一点F，使E在线段AF内
-    let ⟨f, hf1⟩ := G.extension_exists a e hae
+    let ⟨f, hf2, hf1⟩ := G.extension_exists a e hae
 
     -- F必不等于C，否则F和E都将处在直线AC上
     have hfc: f ≠ c := by
@@ -111,19 +121,31 @@ namespace Geometry.HilbertAxioms2D
         exact ha1
         exact hc1
       rw [this]
-      have haf: a ≠ f := by
-        apply a_ne_c_of_between hf1
       subst h
-      -- TODO: between a e f → e ∈ mk_line a f _ 可以作为一个单独的定理
       apply lies_on_mk_line_of_between
       exact hf1
 
-    let ⟨c, hc1⟩ := G.extension_exists f c hfc
+    let ⟨g, hg1⟩ := G.extension_exists f c hfc
+
+    have ⟨l1, hl1⟩ := G.mk_line a c hne
+    have hg2: e ≠ g := by
+      sorry
+    have ⟨l2, hl2⟩ := G.mk_line e g hg2
+
+    have : ∃ p: Point, p ∈ l1 ∧ p ∈ l2 := by
+      sorry
+
     sorry
 
   /-- Induce a 1D Hilbert axioms structure on points lying on a line in 2D plane. -/
   def onLine(l: G.Line):
     HilbertAxioms1D {p: Point // p ∈ l} := {
+      instDecidableEq(a b) :=
+        let v := G.instDecidableEq (a.val) (b.val)
+        match v with
+        | isFalse h => Decidable.isFalse (by rw [Subtype.mk_eq_mk];exact h)
+        | isTrue h => Decidable.isTrue (by rw [Subtype.mk_eq_mk];exact h)
+
       Between := fun a b c => G.Between a.val b.val c.val,
       between_ne := by
         simp only [Subtype.forall, Subtype.mk.injEq]
@@ -154,7 +176,7 @@ namespace Geometry.HilbertAxioms2D
       extension_exists(a' c')(hne: a' ≠ c') :=
         let ⟨a, ha⟩ := a'
         let ⟨c, hc⟩ := c'
-        let ⟨d, hd⟩ := G.extension_exists a c (by simp only [ne_eq, Subtype.mk.injEq] at hne; exact hne)
+        let ⟨d, hd2, hd⟩ := G.extension_exists a c (by simp only [ne_eq, Subtype.mk.injEq] at hne; exact hne)
         have hd1 : d ∈ l := by
           have h:= G.collinear_of_between a c d hd
           rw [G.collinear_def] at h
@@ -168,7 +190,7 @@ namespace Geometry.HilbertAxioms2D
           rw [← this]
           exact h3
           exact hne
-        ⟨⟨d, hd1⟩, hd⟩
+        ⟨⟨d, hd1⟩, ⟨by rw [ne_eq,Subtype.mk_eq_mk]; exact hd2, hd⟩ ⟩
 
       line_exists_two_points :=
         let ⟨⟨a, b⟩, ⟨h1, h2, h3⟩⟩ := G.line_exists_two_points l
@@ -206,7 +228,7 @@ namespace Geometry.HilbertAxioms3D
   theorem exists_point_not_on_line{Point: Type}[G:HilbertAxioms3D Point]
     (l: G.Line): ∃ p: Point, p ∉ l :=
   by
-    let pl' := G.plane_exists.some
+    let pl' := G.instPlaneNonEmpty.some
     let ⟨⟨A,B,C⟩, _,_,_,hne, hnc⟩ := G.exists_three_noncollinear_points pl'
     by_cases hA': A∈ l
     . by_cases hB': B ∈ l
@@ -342,10 +364,23 @@ namespace Geometry.HilbertAxioms3D
    /-- Induce a 2D Hilbert axioms structure on points lying on a plane in 3D space. -/
   def onPlane{Point: Type}[DecidableEq Point][G:HilbertAxioms3D Point](pl: G.Plane):
     HilbertAxioms2D {p: Point // p ∈ pl} := {
+      instDecidableEq(a b) :=
+        let v := G.instDecidableEq (a.val) (b.val)
+        match v with
+        | isFalse h => Decidable.isFalse (by rw [Subtype.mk_eq_mk];exact h)
+        | isTrue h => Decidable.isTrue (by rw [Subtype.mk_eq_mk];exact h)
+
       Line: Type := {l: G.Line // l ⊆ pl},
-      mem_Line := {
+      instMemLine := {
         mem(h1 h2) := h2.val ∈ h1.val
       },
+      instDecidableMemLine(l p) :=
+        let v := G.instDecidableMemLine (l.val) (p.val)
+        match v with
+        | isFalse h => Decidable.isFalse h
+        | isTrue h => Decidable.isTrue h
+
+
       Between(a b c) := Between a.val b.val c.val,
       between_ne(a b c)(h) := by
         have h := G.between_ne a.val b.val c.val h
@@ -355,7 +390,7 @@ namespace Geometry.HilbertAxioms3D
         apply G.between_symm
         exact h
       extension_exists(a c)(h) :=
-        have ⟨d, hd⟩:= G.extension_exists a c (by rw [Subtype.coe_ne_coe]; exact h)
+        have ⟨d, hd2, hd⟩:= G.extension_exists a c (by rw [Subtype.coe_ne_coe]; exact h)
 
         have hd1 : d ∈ pl := by
           have h:= G.collinear_of_between a c d hd
@@ -372,7 +407,7 @@ namespace Geometry.HilbertAxioms3D
             exact hp
           apply hl
           exact h3
-        ⟨⟨d, hd1⟩, hd⟩
+        ⟨⟨d, hd1⟩, ⟨by rw [ne_eq, Subtype.mk_eq_mk];exact hd2, hd⟩⟩
 
       mk_line(a c h) :=
         let ⟨l, hl1, hl2⟩ := G.mk_line a.val c.val (by rw [Subtype.coe_ne_coe]; exact h)

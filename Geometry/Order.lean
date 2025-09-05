@@ -60,7 +60,7 @@ namespace Geometry.HilbertAxioms1D
 
   /-- Theorem 4.1 : For any finite set of points on a straight line, there exists a linearly ordered list
       of these points, and only two such lists exist (the forward and reverse order). -/
-  theorem linear_ordering_of_collinear_points[DecidableEq Point](S : Finset Point) :
+  theorem linear_ordering_of_collinear_points[G: HilbertAxioms1D Point](S : Finset Point) :
       ∃ (L : List Point),
         L.toFinset = S ∧
         List.Nodup L ∧
