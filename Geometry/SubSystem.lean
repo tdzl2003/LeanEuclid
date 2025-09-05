@@ -56,7 +56,69 @@ end Geometry.HilbertAxioms1D
 namespace Geometry.HilbertAxioms2D
   variable {Point: Type}[G: HilbertAxioms2D Point]
 
-  def between_exists(a c: Point)(h: a ≠ c): {b: Point // G.Between a b c} :=
+  /-- 根据公理I.7.2，直线外恒有一点 -/
+  def point_outside_line(l: G.Line)[(p: Point) → Decidable (p ∈ l)]: {p: Point // p ∉ l} :=
+    let ⟨⟨A, B, C⟩, hne, hnc⟩ := G.exists_three_noncollinear_points
+    if hA: A ∈ l then
+      if hB: B ∈ l then
+        have hne: A≠B := by
+          simp only [List.pairwise_cons, List.mem_cons, List.not_mem_nil, or_false,
+            forall_eq_or_imp, forall_eq, IsEmpty.forall_iff, implies_true, List.Pairwise.nil,
+            and_self, and_true] at hne
+          exact hne.1.1
+        have hC: C ∉ l := by
+          intro h
+          apply hnc
+          have : l = G.mk_line A B hne := by
+            apply G.unique_line_from_two_points A B l hne hA hB
+          rw [collinear_def]
+          use l
+        ⟨C, hC⟩
+      else
+        ⟨B, hB⟩
+    else
+      ⟨A, hA⟩
+
+  -- TODO: Can we prove this? or it should be added to axiom system?
+  theorem a_ne_c_of_between{a b c: Point}(h: Between a b c): a ≠ c := by
+    sorry
+
+  theorem lies_on_mk_line_of_between{a b c: Point}{p}(h: Between a b c): b ∈ (mk_line a c p).val :=
+  by
+    sorry
+
+  def between_exists[(l: G.Line)→(p: Point) → Decidable (p ∈ l)](a c: Point)(hne: a ≠ c): {b: Point // G.Between a b c} :=
+    let ⟨l1, ha1, hc1⟩ := G.mk_line a c hne
+    -- 根据公理I.7.2，直线外恒有一点E
+    let ⟨e, he1⟩ := point_outside_line l1
+
+    -- A必不等于E，否则E处在直线AC上
+    have hae: a ≠ e := by
+      intro h
+      apply he1
+      rw [← h]
+      exact ha1
+
+    -- 根据公理II.2.2，直线AE上有一点F，使E在线段AF内
+    let ⟨f, hf1⟩ := G.extension_exists a e hae
+
+    -- F必不等于C，否则F和E都将处在直线AC上
+    have hfc: f ≠ c := by
+      intro h
+      apply he1
+      have : l1 = G.mk_line a c hne := by
+        apply G.unique_line_from_two_points
+        exact ha1
+        exact hc1
+      rw [this]
+      have haf: a ≠ f := by
+        apply a_ne_c_of_between hf1
+      subst h
+      -- TODO: between a e f → e ∈ mk_line a f _ 可以作为一个单独的定理
+      apply lies_on_mk_line_of_between
+      exact hf1
+
+    let ⟨c, hc1⟩ := G.extension_exists f c hfc
     sorry
 
   /-- Induce a 1D Hilbert axioms structure on points lying on a line in 2D plane. -/
