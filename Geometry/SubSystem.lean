@@ -1,4 +1,5 @@
 import Geometry.Basic
+import Geometry.Connections
 import Mathlib.Tactic.Use
 import Mathlib.Logic.Equiv.Defs
 import Mathlib.Tactic.DefEqTransformations
@@ -95,10 +96,20 @@ namespace Geometry.HilbertAxioms2D
 
   theorem lies_on_mk_line_of_between{a b c: Point}(hne: a≠c)(h: Between a b c): b ∈ (mk_line a c hne).val :=
   by
-    sorry
+    have h := G.collinear_of_between a b c h
+    rw [collinear_def] at h
+    let ⟨l, ha, hb, hc⟩ := h
+    have : l = mk_line a c hne := by
+      apply G.unique_line_from_two_points
+      exact ha
+      exact hc
+    rw [← this]
+    exact hb
 
   def between_exists(a c: Point)(hne: a ≠ c): {b: Point // G.Between a b c} :=
+    -- 直线AC
     let ⟨l1, ha1, hc1⟩ := G.mk_line a c hne
+
     -- 根据公理I.7.2，直线外恒有一点E
     let ⟨e, he1⟩ := point_outside_line l1
 
@@ -111,6 +122,7 @@ namespace Geometry.HilbertAxioms2D
 
     -- 根据公理II.2.2，直线AE上有一点F，使E在线段AF内
     let ⟨f, hf2, hf1⟩ := G.extension_exists a e hae
+
 
     -- F必不等于C，否则F和E都将处在直线AC上
     have hfc: f ≠ c := by
@@ -125,22 +137,117 @@ namespace Geometry.HilbertAxioms2D
       apply lies_on_mk_line_of_between
       exact hf1
 
-    let ⟨g, hg1⟩ := G.extension_exists f c hfc
+    let ⟨g, hg2, hg1⟩ := G.extension_exists f c hfc
 
-    have ⟨l1, hl1⟩ := G.mk_line a c hne
     have hg2: e ≠ g := by
-      sorry
-    have ⟨l2, hl2⟩ := G.mk_line e g hg2
+      have t1 := G.collinear_of_between _ _ _ hf1
+      have t2 := G.collinear_of_between _ _ _ hg1
+      rw [collinear_def] at t1 t2
+      -- 直线AEF
+      let ⟨l3, ha, he, hf1⟩ := t1
+      -- 直线FCG
+      let ⟨l4, hf2, hc, hg⟩ := t2
 
-    have : ∃ p: Point, p ∈ l1 ∧ p ∈ l2 := by
-      sorry
+      intro hc2
+      apply hg2
+      apply common_point_of_lines l3 l4
+      . -- l3 ≠ l4
+        have : c ∉ l3 := by
+          intro h
+          have: l1 = l3 := by
+            have : l1 = mk_line a c hne := by
+              apply G.unique_line_from_two_points
+              exact ha1
+              exact hc1
+            rw [this]
+            have : l3 = mk_line a c hne := by
+              apply G.unique_line_from_two_points
+              exact ha
+              exact h
+            rw [this]
+          apply he1
+          rw [this]
+          exact he
+        intro h
+        apply this
+        rw [h]
+        exact hc
+      . rw [← hc2]
+        exact he
+      . exact hg
+      . exact hf1
+      . exact hf2
 
-    let ⟨b, hp1, hp2⟩ := G.mk_line_intersection this
+    -- 直线EG
+    let ⟨l2, hl2⟩ := G.mk_line e g hg2
 
-    have hfinal: Between a b c := by
-      sorry
+    -- TODO: 和上述证明有少许重复，看看如何精简
+    have t1 : ¬ Collinear a f c := by
+      intro h
+      have t1 := G.collinear_of_between _ _ _ hf1
+      rw [collinear_def] at t1 h
+      -- 直线AEF
+      let ⟨l3, ha, he, hf1⟩ := t1
+      -- 虚构的矛盾直线ACF
+      let ⟨l4, ha', hf', hc'⟩ := h
 
-    ⟨b, hfinal⟩
+      apply he1
+      -- l3、l4共点a、f，所以相等
+      have t2: l3 = l4 := by
+        have: l3 = mk_line f a hf2 := by
+          apply G.unique_line_from_two_points
+          exact hf1
+          exact ha
+        rw [this]
+        have: l4 = mk_line f a hf2 := by
+          apply G.unique_line_from_two_points
+          exact hf'
+          exact ha'
+        rw [this]
+      -- l1、l3共点a、c，所以相等
+      have t3: l1 = l3 := by
+        have : l1 = mk_line a c hne := by
+          apply G.unique_line_from_two_points
+          exact ha1
+          exact hc1
+        rw [this]
+        have : l3 = mk_line a c hne := by
+          apply G.unique_line_from_two_points
+          exact ha
+          rw [t2]
+          exact hc'
+        rw [this]
+      rw [t3]
+      exact he
+
+    have t2 : ∃ P: Point, OnSegment a P f ∧ P ∈ l2 := by
+      use e
+      and_intros
+      . rw [OnSegment_def]
+        apply Or.inl
+        exact hf1
+      . exact hl2.1
+
+    have ⟨b, hb1, hb2⟩  := G.pasch_axiom t1 l2 (t2)
+
+    have hFinal: Between a b c  := by
+      have t1: ¬ OnSegment f b c := by
+        -- 如果b在fc之间，那么b=g，但g又不在fc之间
+        sorry
+      have t2: b ≠ a := by
+        -- 如果b=a，那么e=a，矛盾
+        sorry
+
+      have t3: b ≠ c := by
+        -- 可以直接从t1推出
+        simp only [OnSegment_def, not_or] at t1
+        exact t1.2.2
+      simp only [t1, t2, t3, OnSegment_def, false_or, or_false] at hb1
+      exact hb1
+
+    ⟨b, hFinal⟩
+
+
 
   /-- Induce a 1D Hilbert axioms structure on points lying on a line in 2D plane. -/
   def onLine(l: G.Line):

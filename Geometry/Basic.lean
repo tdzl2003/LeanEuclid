@@ -71,7 +71,7 @@ namespace Geometry
     mk_line(a b: Point)(h: a ≠ b): {l: Line // a ∈ l ∧ b ∈ l}
 
     /-- construction axiom: If there's two line with common point, we can construct it. -/
-    mk_line_intersection{l1 l2: Line}(e: ∃ p, p∈l1 ∧ p ∈ l2) : {p: Point // p ∈ l1 ∧ p ∈ l2}
+    mk_line_intersection{l1 l2: Line}(hne: l1 ≠ l2)(he: ∃ p, p∈l1 ∧ p ∈ l2) : {p: Point // p ∈ l1 ∧ p ∈ l2}
 
     /-- axiom I.2: Any two distinct points of a straight line completely determine that line -/
     unique_line_from_two_points (a b: Point)(l: Line)(h:  a ≠ b) : a ∈ l → b ∈ l → l = mk_line a b h
