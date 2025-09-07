@@ -10,7 +10,7 @@ namespace Geometry
     Between(a b c: Point): Prop
 
     /-- Between relation is exclusive. -/
-    between_ne(a b c: Point): Between a b c → a ≠ b ∧ b ≠ c
+    between_ne(a b c: Point): Between a b c → [a,b,c].Pairwise (· ≠ ·)
 
     /--
       axiom II.1: If A, B, C are points of a straight line and B lies Between A and C, then B lies also Between C and A.
@@ -27,7 +27,7 @@ namespace Geometry
       axiom II.2.2 If A and C are two points of a straight line, there exists at least one point D so situated that C lies Between A and D.
       Additional constraints: D ≠ A
     -/
-    extension_exists(a c: Point): a ≠ c → {d: Point // d ≠ a ∧ Between a c d}
+    extension_exists(a c: Point): a ≠ c → {d: Point // Between a c d}
 
     /-- axiom I.8: There exist at least two points on a line. -/
     line_exists_two_points: {s: Point × Point // s.1 ≠ s.2}
@@ -53,7 +53,7 @@ namespace Geometry
     Between(a b c: Point): Prop
 
     /-- Between relation is exclusive. -/
-    between_ne(a b c: Point): Between a b c → a ≠ b ∧ b ≠ c
+    between_ne{a b c: Point}: Between a b c → [a, b, c].Pairwise (· ≠ ·)
 
     /--
       axiom II.1: If A, B, C are points of a straight line and B lies Between A and C, then B lies also Between C and A.
@@ -65,7 +65,7 @@ namespace Geometry
       Additional constraints: D ≠ A, which is required to prove between_exists
       TODO: can we remove this constraint and prove one D' ≠ A exists? Maybe it's a circular argument
     -/
-    extension_exists(a c: Point): a ≠ c → {d: Point // d ≠ a ∧ Between a c d}
+    extension_exists(a c: Point): a ≠ c → {d: Point // Between a c d}
 
     /-- axiom I.1: Two distinct points A and B always completely determine a straight line a. --/
     mk_line(a b: Point)(h: a ≠ b): {l: Line // a ∈ l ∧ b ∈ l}
@@ -82,11 +82,11 @@ namespace Geometry
     /-- a b c is collinear -/
     Collinear (a b c : Point) : Prop := ∃ l : Line, a ∈ l ∧ b ∈ l ∧ c ∈ l
 
-    collinear_def(a b c :Point) : Collinear a b c ↔ ∃ l : Line, a ∈ l ∧ b ∈ l ∧ c ∈ l := by
+    collinear_def{a b c :Point} : Collinear a b c ↔ ∃ l : Line, a ∈ l ∧ b ∈ l ∧ c ∈ l := by
       simp only [Collinear]
 
     /-- If B is between A and C, then A, B, C are collinear. -/
-    collinear_of_between(a b c: Point): Between a b c → Collinear a b c
+    collinear_of_between{a b c: Point}: Between a b c → Collinear a b c
 
     /--
       axiom I.7.2: in every plane at least three points not lying in the same straight line
@@ -124,7 +124,7 @@ namespace Geometry
     Between(a b c: Point): Prop
 
     /-- Between relation is exclusive. -/
-    between_ne(a b c: Point): Between a b c → a ≠ b ∧  b ≠ c
+    between_ne(a b c: Point): Between a b c → [a,b,c].Pairwise (· ≠ ·)
 
     /--
       axiom II.1: If A, B, C are points of a straight line and B lies Between A and C, then B lies also Between C and A.
@@ -135,7 +135,7 @@ namespace Geometry
       axiom II.2.2 If A and C are two points of a straight line, there exists at least one point D so situated that C lies Between A and D.
       Additional constraints: D ≠ A,
     -/
-    extension_exists(a c: Point): a ≠ c → {d: Point // d ≠ a ∧ Between a c d}
+    extension_exists(a c: Point): a ≠ c → {d: Point // Between a c d}
 
     /-- axiom I.1: Two distinct points A and B always completely determine a straight line a. --/
     mk_line(a b: Point)(h: a ≠ b): {l: Line // a ∈ l ∧ b ∈ l}

@@ -4,6 +4,7 @@ import Mathlib.Tactic.Use
 import Mathlib.Logic.Equiv.Defs
 import Mathlib.Tactic.DefEqTransformations
 import Mathlib.Tactic.Contrapose
+import Mathlib.Tactic.NormNum
 
 namespace Geometry.HilbertAxioms1D
   def transfer {Point1 Point2 : Type} (e : Point2 ≃ Point1) (h1 : HilbertAxioms1D Point1) : HilbertAxioms1D Point2 :=
@@ -17,8 +18,12 @@ namespace Geometry.HilbertAxioms1D
     between_ne := by
       intro a b c h
       have h' := h1.between_ne (e a) (e b) (e c) h
-      simp only [ne_eq, EmbeddingLike.apply_eq_iff_eq] at h'
-      exact h'
+      rw [show [e a, e b, e c] = ([a, b, c].map (fun v ↦ e v)) by simp only [List.map_cons,
+        List.map_nil]] at h'
+      rw [List.pairwise_map] at h'
+      apply List.Pairwise.imp _ h'
+      intro a b
+      simp only [ne_eq, EmbeddingLike.apply_eq_iff_eq, imp_self]
     between_symm := by
       intro a b c h
       apply h1.between_symm
@@ -40,17 +45,12 @@ namespace Geometry.HilbertAxioms1D
         apply hne
         apply e.injective
         exact heq
-      let ⟨b1, hb1, hb2⟩ := h1.extension_exists a1 c1 hne1
+      let ⟨b1, hb2⟩ := h1.extension_exists a1 c1 hne1
       let b := e.symm b1
 
       ⟨b, by
-        and_intros
-        . unfold b
-          rw [show a = e.symm a1 by simp only [Equiv.symm_apply_apply, a1]]
-          rw [ne_eq, Equiv.symm_apply_eq, Equiv.symm_apply_apply]
-          exact hb1
-        . rw [show e b = b1 by simp only [Equiv.apply_symm_apply, b]]
-          exact hb2
+        rw [show e b = b1 by simp only [Equiv.apply_symm_apply, b]]
+        exact hb2
       ⟩
     line_exists_two_points := by
       let ⟨⟨a1, b1⟩, h⟩ := h1.line_exists_two_points
@@ -96,7 +96,7 @@ namespace Geometry.HilbertAxioms2D
 
   theorem lies_on_mk_line_of_between{a b c: Point}(hne: a≠c)(h: Between a b c): b ∈ (mk_line a c hne).val :=
   by
-    have h := G.collinear_of_between a b c h
+    have h := G.collinear_of_between h
     rw [collinear_def] at h
     let ⟨l, ha, hb, hc⟩ := h
     have : l = mk_line a c hne := by
@@ -121,7 +121,7 @@ namespace Geometry.HilbertAxioms2D
       exact ha1
 
     -- 根据公理II.2.2，直线AE上有一点F，使E在线段AF内
-    let ⟨f, hf2, hf1⟩ := G.extension_exists a e hae
+    let ⟨f, hf1⟩ := G.extension_exists a e hae
 
 
     -- F必不等于C，否则F和E都将处在直线AC上
@@ -137,11 +137,18 @@ namespace Geometry.HilbertAxioms2D
       apply lies_on_mk_line_of_between
       exact hf1
 
-    let ⟨g, hg2, hg1⟩ := G.extension_exists f c hfc
+    let ⟨g, hg1⟩ := G.extension_exists f c hfc
+
+    have hg2: f ≠ g := by
+      have h := G.between_ne hg1
+      rw [List.pairwise_iff_getElem] at h
+      specialize h 0 2 (by norm_num) (by norm_num) (by decide)
+      simp only [List.getElem_cons_zero, List.getElem_cons_succ] at h
+      exact h
 
     have hg2: e ≠ g := by
-      have t1 := G.collinear_of_between _ _ _ hf1
-      have t2 := G.collinear_of_between _ _ _ hg1
+      have t1 := G.collinear_of_between hf1
+      have t2 := G.collinear_of_between hg1
       rw [collinear_def] at t1 t2
       -- 直线AEF
       let ⟨l3, ha, he, hf1⟩ := t1
@@ -172,11 +179,11 @@ namespace Geometry.HilbertAxioms2D
         apply this
         rw [h]
         exact hc
+      . exact hf1
+      . exact hf2
       . rw [← hc2]
         exact he
       . exact hg
-      . exact hf1
-      . exact hf2
 
     -- 直线EG
     let ⟨l2, hl2⟩ := G.mk_line e g hg2
@@ -184,22 +191,29 @@ namespace Geometry.HilbertAxioms2D
     -- TODO: 和上述证明有少许重复，看看如何精简
     have t1 : ¬ Collinear a f c := by
       intro h
-      have t1 := G.collinear_of_between _ _ _ hf1
+      have t1 := G.collinear_of_between hf1
       rw [collinear_def] at t1 h
       -- 直线AEF
-      let ⟨l3, ha, he, hf1⟩ := t1
+      let ⟨l3, ha, he, hf2⟩ := t1
       -- 虚构的矛盾直线ACF
       let ⟨l4, ha', hf', hc'⟩ := h
+
+      have hf3 : f ≠ a := by
+        have hf1 := G.between_ne hf1
+        rw [List.pairwise_iff_getElem] at hf1
+        specialize hf1 0 2 (by norm_num) (by norm_num) (by decide)
+        simp only [List.getElem_cons_zero, List.getElem_cons_succ] at hf1
+        apply Ne.symm hf1
 
       apply he1
       -- l3、l4共点a、f，所以相等
       have t2: l3 = l4 := by
-        have: l3 = mk_line f a hf2 := by
+        have: l3 = mk_line f a hf3 := by
           apply G.unique_line_from_two_points
-          exact hf1
+          exact hf2
           exact ha
         rw [this]
-        have: l4 = mk_line f a hf2 := by
+        have: l4 = mk_line f a hf3 := by
           apply G.unique_line_from_two_points
           exact hf'
           exact ha'
