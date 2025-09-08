@@ -101,6 +101,11 @@ namespace Geometry.HilbertAxioms2D
         · exact (G.mk_line hac).property.right -- c ∈ l
     exact h hcol
 
+  theorem collinear_of_eq(a b: Point): Collinear a a b := by
+    by_contra h
+    have h := ne_of_not_collinear h
+    contradiction
+
   theorem collinear_comm_cross{a b c: Point}: Collinear a b c → Collinear c b a := by
     rw [collinear_def, collinear_def]
     intro ⟨l, hl⟩

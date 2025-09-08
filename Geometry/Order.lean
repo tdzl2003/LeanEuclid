@@ -88,18 +88,34 @@ namespace Geometry.HilbertAxioms2D
       and_true] at h
     simp [h]
 
-  theorem collinear_of_eq(a b: Point): Collinear a a b := by
-    sorry
-
   theorem collinear_of_onsegment{a b c:Point}:
-    OnSegment a b c  → Collinear a b c := by
-    sorry
+    OnSegment a b c → Collinear a b c := by
+    intro h
+    rw [OnSegment_def] at h
+    rcases h with h | h | h
+    . apply collinear_of_between h
+    . subst h
+      apply collinear_of_eq
+    . subst h
+      apply collinear_comm_cross
+      apply collinear_of_eq
 
   theorem between_not_symm_right{a b c : Point}: Between a b c → ¬ Between a c b := by
     sorry
 
   theorem not_between_of_onsegment_symm{a b c : Point}: OnSegment a b c → ¬ Between a c b := by
-    sorry
+    intro h
+    rw [OnSegment_def] at h
+    rcases h with h | h | h
+    . apply between_not_symm_right h
+    . subst h
+      intro h
+      have h:= (between_ne' h).2.2
+      contradiction
+    . subst h
+      intro h
+      have h := (between_ne' h).2.1
+      contradiction
 
   theorem in_mk_line_iff_collinear{a b c : Point}(hne: a ≠ c):
     Collinear a b c ↔ b ∈ (mk_line hne).val :=
