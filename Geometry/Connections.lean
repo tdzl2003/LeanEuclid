@@ -126,7 +126,17 @@ namespace Geometry.HilbertAxioms2D
     simp only [hl, and_self]
 
   theorem collinear_comp{a b c d: Point}(hne: a≠b): Collinear a b c → Collinear a b d → Collinear a c d := by
-    sorry
+    intro h1 h2
+    rw [collinear_def] at h1 h2 ⊢
+    rcases h1 with ⟨l1, ha1, hb1, hc1⟩
+    rcases h2 with ⟨l2, ha2, hb2, hd2⟩
+    -- l1 和 l2 都是包含 a,b 的直线，因此唯一性保证它们相等
+    have heq : l1 = l2 :=
+      G.unique_line_from_two_points (l := l1) hne ha1 hb1 ▸
+      (G.unique_line_from_two_points (l := l2) hne ha2 hb2).symm
+    subst heq
+    -- 于是 a,c,d 都在同一条直线上
+    exact ⟨l1, ha2, hc1, hd2⟩
 
 end Geometry.HilbertAxioms2D
 
