@@ -18,6 +18,11 @@ namespace Geometry
     between_symm{a b c: Point}: Between a b c → Between c b a
 
     /--
+      This can be proved in 2D but is axiom for 1D.
+    -/
+    between_not_symm_right{a b c : Point}: Between a b c → ¬ Between a c b
+
+    /--
       axiom II.2.1 If A and C are two points of a straight line, there exists at least one point B lying between A and C.
       This can be proved in 2D but is axiom for 1D.
     -/

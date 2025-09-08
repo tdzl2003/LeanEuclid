@@ -28,6 +28,10 @@ namespace Geometry.HilbertAxioms1D
       intro a b c h
       apply h1.between_symm
       exact h
+    between_not_symm_right := by
+      intro a b c h
+      apply h1.between_not_symm_right
+      exact h
     between_exists := by
       intro a b hne
       let a1 := e a
@@ -96,6 +100,10 @@ namespace Geometry.HilbertAxioms2D
         intro a ha b hb c hc h
         apply G.between_symm
         exact h
+
+      between_not_symm_right := by
+        sorry
+
       between_exists{a' c'}(hne') :=
         let ⟨a, ha⟩ := a'
         let ⟨c, hc⟩ := c'

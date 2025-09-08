@@ -81,17 +81,45 @@ end Geometry.HilbertAxioms1D
 namespace Geometry.HilbertAxioms2D
   variable {Point: Type}[G: HilbertAxioms2D Point]
 
-  theorem lies_on_mk_line_of_between{a b c: Point}(hne: a≠c)(h: Between a b c): b ∈ (mk_line hne).val :=
+  theorem between_ne'{a b c : Point}(h: Between a b c) : a≠ b ∧ b ≠ c ∧ a ≠ c := by
+    have h := between_ne h
+    simp only [ne_eq, List.pairwise_cons, List.mem_cons, List.not_mem_nil, or_false,
+      forall_eq_or_imp, forall_eq, IsEmpty.forall_iff, implies_true, List.Pairwise.nil, and_self,
+      and_true] at h
+    simp [h]
+
+  theorem collinear_of_eq(a b: Point): Collinear a a b := by
+    sorry
+
+  theorem collinear_of_onsegment{a b c:Point}:
+    OnSegment a b c  → Collinear a b c := by
+    sorry
+
+  theorem between_not_symm_right{a b c : Point}: Between a b c → ¬ Between a c b := by
+    sorry
+
+  theorem not_between_of_onsegment_symm{a b c : Point}: OnSegment a b c → ¬ Between a c b := by
+    sorry
+
+  theorem in_mk_line_iff_collinear{a b c : Point}(hne: a ≠ c):
+    Collinear a b c ↔ b ∈ (mk_line hne).val :=
   by
-    have h := G.collinear_of_between h
-    rw [collinear_def] at h
-    let ⟨l, ha, hb, hc⟩ := h
-    have : l = mk_line hne := by
-      apply G.unique_line_from_two_points
-      exact ha
-      exact hc
-    rw [← this]
-    exact hb
+    constructor
+    . intro h
+      rw [collinear_def] at h
+      let ⟨l, ha, hb, hc⟩ := h
+      have : l = (mk_line hne).val := by
+        apply G.unique_line_from_two_points
+        exact ha
+        exact hc
+      rw [← this]
+      exact hb
+    . intro h
+      let l' := mk_line hne
+      rw [show (mk_line hne).val = l'.val by rfl] at h
+      rw [collinear_def]
+      use l'.val
+      simp only [l'.property, h, and_self]
 
   def between_exists{a c: Point}(hne: a ≠ c): {b: Point // G.Between a b c} :=
     -- 直线AC
@@ -110,6 +138,20 @@ namespace Geometry.HilbertAxioms2D
     -- 根据公理II.2.2，直线AE上有一点F，使E在线段AF内
     let ⟨f, hf1⟩ := G.extension_exists hae
 
+    have hfe: f ≠ e := by
+      apply Ne.symm
+      have h := G.between_ne hf1
+      rw [List.pairwise_iff_getElem] at h
+      specialize h 1 2 (by norm_num) (by norm_num) (by decide)
+      simp only [List.getElem_cons_zero, List.getElem_cons_succ] at h
+      exact h
+
+    have haf: a ≠ f := by
+      have h := G.between_ne hf1
+      rw [List.pairwise_iff_getElem] at h
+      specialize h 0 2 (by norm_num) (by norm_num) (by decide)
+      simp only [List.getElem_cons_zero, List.getElem_cons_succ] at h
+      exact h
 
     -- F必不等于C，否则F和E都将处在直线AC上
     have hfc: f ≠ c := by
@@ -121,7 +163,8 @@ namespace Geometry.HilbertAxioms2D
         exact hc1
       rw [this]
       subst h
-      apply lies_on_mk_line_of_between
+      rw [← in_mk_line_iff_collinear]
+      apply collinear_of_between
       exact hf1
 
     let ⟨g, hg1⟩ := G.extension_exists hfc
@@ -133,7 +176,7 @@ namespace Geometry.HilbertAxioms2D
       simp only [List.getElem_cons_zero, List.getElem_cons_succ] at h
       exact h
 
-    have hg2: e ≠ g := by
+    have hg3: e ≠ g := by
       have t1 := G.collinear_of_between hf1
       have t2 := G.collinear_of_between hg1
       rw [collinear_def] at t1 t2
@@ -144,7 +187,7 @@ namespace Geometry.HilbertAxioms2D
 
       intro hc2
       apply hg2
-      apply common_point_of_lines l3 l4
+      apply common_point_of_lines (l1:=l3) (l2:=l4)
       . -- l3 ≠ l4
         have : c ∉ l3 := by
           intro h
@@ -173,7 +216,7 @@ namespace Geometry.HilbertAxioms2D
       . exact hg
 
     -- 直线EG
-    let ⟨l2, hl2⟩ := G.mk_line hg2
+    let ⟨l2, hl2⟩ := G.mk_line hg3
 
     -- TODO: 和上述证明有少许重复，看看如何精简
     have t1 : ¬ Collinear a f c := by
@@ -232,18 +275,108 @@ namespace Geometry.HilbertAxioms2D
     have ⟨b, hb1, hb2⟩  := G.pasch_axiom t1 t2
 
     have hFinal: Between a b c  := by
-      have t1: ¬ OnSegment f b c := by
-        -- 如果b在fc之间，那么b=g，但g又不在fc之间
-        sorry
-      have t2: b ≠ a := by
-        -- 如果b=a，那么e=a，矛盾
-        sorry
+      have t3: ¬ OnSegment f b c := by
+        intro H_onseg
+        have hb_col : Collinear f b c := collinear_of_onsegment H_onseg
+        have hg_col : Collinear f c g := collinear_of_between hg1
+        have hb_in_lfc : b ∈ (mk_line hfc).val := by
+          rw [← in_mk_line_iff_collinear]
+          exact hb_col
+        have hg_in_lfc : g ∈ (mk_line hfc).val := by
+          rw [← in_mk_line_iff_collinear]
+          apply collinear_comm_right
+          exact hg_col
 
-      have t3: b ≠ c := by
+        have hbg: b ≠ g := by
+          intro eq
+          have := not_between_of_onsegment_symm H_onseg
+          rw [eq] at this
+          exact this hg1
+
+        have : l2 = (mk_line hfc).val := by
+          apply line_eq_of_two_points hbg
+          exact hb2
+          exact hb_in_lfc
+          exact hl2.2
+          exact hg_in_lfc
+
+        have he_in_lfc : e ∈ (mk_line hfc).val := this ▸ hl2.left
+        rw [← in_mk_line_iff_collinear] at he_in_lfc
+
+        have he_in_laf : Collinear f e a := by
+          apply collinear_comm_cross
+          apply collinear_of_between hf1
+
+        have : Collinear a f c := by
+          rw [collinear_def]
+          let l:= mk_line hfe
+          use l.val
+          and_intros
+          . unfold l
+            rw [← in_mk_line_iff_collinear]
+            apply collinear_comm_right
+            exact he_in_laf
+          . exact l.property.1
+          . unfold l
+            rw [← in_mk_line_iff_collinear]
+            apply collinear_comm_right
+            exact he_in_lfc
+
+        exact t1 this
+
+      have t4: b ≠ a := by
+        intro he
+        -- 如果b=a，那么e=a，矛盾
+        have : e = a := by
+          let l3 := mk_line hae
+          have: l2 ≠ l3 := by
+            have hl3: a ∈ l3.val := l3.property.1
+            have hg_l2: g ∈ l2 := hl2.2
+
+            intro h_eq
+            have hg_l3: g ∈ l3.val := by rw [h_eq] at hg_l2; exact hg_l2
+
+            have h_col : Collinear a e g := by
+              apply collinear_comm_right
+              rw [in_mk_line_iff_collinear hae]
+              exact hg_l3
+
+            -- 目标推导afc共线
+            -- aeg、aef共线推出afg共线
+            have h_afg : Collinear a f g := by
+              apply collinear_comp hae
+              . apply collinear_of_between
+                exact hf1
+              . exact h_col
+
+            -- fga、fgc共线推出afc共线
+            have h_afc : Collinear f a c := by
+              apply collinear_comp hg2
+              . apply collinear_comm_rotate
+                exact h_afg
+              . apply collinear_comm_right
+                apply collinear_of_between
+                exact hg1
+
+            apply t1
+            apply collinear_comm_left
+            exact h_afc
+
+          apply common_point_of_lines this
+          . exact hl2.1
+          . exact l3.property.2
+          . rw [← he]
+            exact hb2
+          . exact l3.property.1
+
+        apply hae
+        rw [this]
+
+      have t5: b ≠ c := by
         -- 可以直接从t1推出
-        simp only [OnSegment_def, not_or] at t1
-        exact t1.2.2
-      simp only [t1, t2, t3, OnSegment_def, false_or, or_false] at hb1
+        simp only [OnSegment_def, not_or] at t3
+        exact t3.2.2
+      simp only [t3, t4, t5, OnSegment_def, false_or, or_false] at hb1
       exact hb1
 
     ⟨b, hFinal⟩
