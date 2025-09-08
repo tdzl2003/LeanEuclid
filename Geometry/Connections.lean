@@ -146,6 +146,39 @@ namespace Geometry.HilbertAxioms3D
 
   theorem ne_of_not_collinear{a b c: Point}:
     ¬Collinear a b c → a ≠ b := by
-    sorry
+    intro h h_eq
+    subst h_eq
+    -- 如果 a = b，则 a, b, c 共线（因为 a,b 在同一条线上且 b=c 时平凡）
+    have hcol : Collinear a a c := by
+      -- 构造出 a,c 两点确定的直线
+      by_cases hac : a = c
+      · -- 如果 a = c，那三个点相同，更是共线
+        obtain ⟨⟨p,q,_⟩, hpair, _⟩ := G.space_exists_four_noncoplanar_points
+        have t1:∀ d, d≠a → Collinear a a c := by
+          intro d hda
+          let l := G.mk_line hda
+          rw [collinear_def, ← hac]
+          refine ⟨l, ?_, ?_, ?_⟩
+          · exact (G.mk_line hda).property.right   -- a ∈ l
+          · exact (G.mk_line hda).property.right   -- b = a ∈ l
+          · exact (G.mk_line hda).property.right -- c ∈ l
+
+        by_cases h: p = a
+        . have : q ≠ a  := by
+            rw [← h]
+            rw [List.pairwise_iff_getElem] at hpair
+            specialize hpair 0 1 (by norm_num) (by norm_num) (by decide)
+            simp only [List.getElem_cons_zero, List.getElem_cons_succ] at hpair
+            apply Ne.symm hpair
+          apply t1 q this
+        . apply t1 p h
+      ·
+        let l := G.mk_line hac
+        rw [collinear_def]
+        refine ⟨l, ?_, ?_, ?_⟩
+        · exact (G.mk_line hac).property.left   -- a ∈ l
+        · exact (G.mk_line hac).property.left   -- b = a ∈ l
+        · exact (G.mk_line hac).property.right -- c ∈ l
+    exact h hcol
 
 end Geometry.HilbertAxioms3D
