@@ -86,7 +86,7 @@ namespace Geometry.HilbertAxioms2D
     simp only [ne_eq, List.pairwise_cons, List.mem_cons, List.not_mem_nil, or_false,
       forall_eq_or_imp, forall_eq, IsEmpty.forall_iff, implies_true, List.Pairwise.nil, and_self,
       and_true] at h
-    simp [h]
+    simp only [ne_eq, h, not_false_eq_true, and_self]
 
   theorem collinear_of_onsegment{a b c:Point}:
     OnSegment a b c → Collinear a b c := by
