@@ -1,5 +1,6 @@
 import Geometry.Basic
 import Mathlib.Tactic.ByContra
+import Mathlib.Tactic.Use
 
 namespace Geometry.HilbertAxioms2D
   variable {Point: Type} [G:HilbertAxioms2D Point]
@@ -28,4 +29,41 @@ namespace Geometry.HilbertAxioms2D
       rw [t1, t2]
     exact absurd this h
 
+  /-- 根据公理I.7.2，直线外恒有一点 -/
+  def point_outside_line(l: G.Line)[(p: Point) → Decidable (p ∈ l)]: {p: Point // p ∉ l} :=
+    let ⟨⟨A, B, C⟩, hne, hnc⟩ := G.exists_three_noncollinear_points
+    if hA: A ∈ l then
+      if hB: B ∈ l then
+        have hne: A≠B := by
+          simp only [ne_eq, List.pairwise_cons, List.mem_cons, List.not_mem_nil, or_false,
+            forall_eq_or_imp, forall_eq, false_implies, implies_true, List.Pairwise.nil, and_self,
+            and_true] at hne
+          exact hne.1.1
+        have hC: C ∉ l := by
+          intro h
+          apply hnc
+          have : l = G.mk_line hne := by
+            apply G.unique_line_from_two_points hne hA hB
+          rw [collinear_def]
+          use l
+        ⟨C, hC⟩
+      else
+        ⟨B, hB⟩
+    else
+      ⟨A, hA⟩
+
+  theorem ne_of_not_collinear{a b c: Point}:
+    ¬Collinear a b c → a ≠ b := by
+    sorry
+
 end Geometry.HilbertAxioms2D
+
+
+namespace Geometry.HilbertAxioms3D
+  variable {Point: Type} [G:HilbertAxioms3D Point]
+
+  theorem ne_of_not_collinear{a b c: Point}:
+    ¬Collinear a b c → a ≠ b := by
+    sorry
+
+end Geometry.HilbertAxioms3D

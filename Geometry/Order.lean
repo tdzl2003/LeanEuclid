@@ -81,30 +81,6 @@ end Geometry.HilbertAxioms1D
 namespace Geometry.HilbertAxioms2D
   variable {Point: Type}[G: HilbertAxioms2D Point]
 
-
-  /-- 根据公理I.7.2，直线外恒有一点 -/
-  def point_outside_line(l: G.Line)[(p: Point) → Decidable (p ∈ l)]: {p: Point // p ∉ l} :=
-    let ⟨⟨A, B, C⟩, hne, hnc⟩ := G.exists_three_noncollinear_points
-    if hA: A ∈ l then
-      if hB: B ∈ l then
-        have hne: A≠B := by
-          simp only [List.pairwise_cons, List.mem_cons, List.not_mem_nil, or_false,
-            forall_eq_or_imp, forall_eq, IsEmpty.forall_iff, implies_true, List.Pairwise.nil,
-            and_self, and_true] at hne
-          exact hne.1.1
-        have hC: C ∉ l := by
-          intro h
-          apply hnc
-          have : l = G.mk_line hne := by
-            apply G.unique_line_from_two_points hne hA hB
-          rw [collinear_def]
-          use l
-        ⟨C, hC⟩
-      else
-        ⟨B, hB⟩
-    else
-      ⟨A, hA⟩
-
   theorem lies_on_mk_line_of_between{a b c: Point}(hne: a≠c)(h: Between a b c): b ∈ (mk_line hne).val :=
   by
     have h := G.collinear_of_between h

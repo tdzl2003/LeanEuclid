@@ -105,7 +105,7 @@ namespace Geometry
     straight line lying in the plane ABC and not passing through any of the points A,
     B, C. Then, if the straight line a passes through a point of the segment AB, it will
     also pass through either a point of the segment BC or a point of the segment AC.-/
-    pasch_axiom {A B C: Point}(h: ¬Collinear A B C){l: Line}(h2: ∃ P: Point, OnSegment A P B ∧ P ∈ l):
+    pasch_axiom {A B C: Point}{l: Line}(h1: ¬Collinear A B C)(h2: ∃ P: Point, OnSegment A P B ∧ P ∈ l):
         {Q: Point // (OnSegment B Q C ∨  OnSegment A Q C) ∧ Q ∈ l}
 
   class HilbertAxioms3D (Point: Type) where
@@ -178,7 +178,7 @@ namespace Geometry
     straight line lying in the plane ABC and not passing through any of the points A,
     B, C. Then, if the straight line a passes through a point of the segment AB, it will
     also pass through either a point of the segment BC or a point of the segment AC.-/
-    pasch_axiom {A B C: Point}(h1: ¬Collinear A B C){l: Line}(h2: l ⊆ (mk_plane h1).val)(h3: ∃ P: Point, OnSegment A P B ∧ P ∈ l) :
+    pasch_axiom {A B C: Point}{l: Line}(h1: ¬Collinear A B C)(h2: l ⊆ (mk_plane h1).val)(h3: ∃ P: Point, OnSegment A P B ∧ P ∈ l) :
         {Q: Point // (OnSegment B Q C ∨  OnSegment A Q C) ∧ Q ∈ l}
 
     /-- axiom I.4: Any three points A, B, C of a plane α, which do not lie in the same straight line, completely determine that plane. -/

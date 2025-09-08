@@ -291,14 +291,18 @@ namespace Geometry.HilbertAxioms3D
 
    /-- Induce a 2D Hilbert axioms structure on points lying on a plane in 3D space. -/
   def onPlane{Point: Type}[DecidableEq Point][G:HilbertAxioms3D Point](pl: G.Plane):
-    HilbertAxioms2D {p: Point // p ∈ pl} := {
+    HilbertAxioms2D {p: Point // p ∈ pl} :=
+    let SubPoint := {p: Point // p ∈ pl}
+    let SubLine := {l: G.Line // l ⊆ pl}
+
+    {
       instDecidableEq(a b) :=
         let v := G.instDecidableEq (a.val) (b.val)
         match v with
         | isFalse h => Decidable.isFalse (by rw [Subtype.mk_eq_mk];exact h)
         | isTrue h => Decidable.isTrue (by rw [Subtype.mk_eq_mk];exact h)
 
-      Line: Type := {l: G.Line // l ⊆ pl},
+      Line: Type := SubLine,
       instMemLine := {
         mem(h1 h2) := h2.val ∈ h1.val
       },
@@ -312,7 +316,7 @@ namespace Geometry.HilbertAxioms3D
       Between(a b c) := Between a.val b.val c.val,
       between_ne{a b c}(h) := by
         have h := G.between_ne h
-        apply List.Pairwise.of_map (fun (a: {p: Point // p ∈ pl})  ↦ a.val) _ h
+        apply List.Pairwise.of_map (fun (a: SubPoint)  ↦ a.val) _ h
         intro a b
         simp only [ne_eq]
         rw [Subtype.mk_eq_mk]
@@ -339,6 +343,14 @@ namespace Geometry.HilbertAxioms3D
           apply hl
           exact h3
         ⟨⟨d, hd1⟩, hd⟩
+
+      Collinear(a b c) := ∃ l : SubLine, a ∈ l ∧ b ∈ l ∧ c ∈ l
+
+      collinear_def{a b c} := by
+        rfl
+
+      OnSegment_def{a b c} := by
+        simp only [OnSegment]
 
       mk_line{a c}(h) :=
         let ⟨l, hl1, hl2⟩ := G.mk_line (by rw [Subtype.coe_ne_coe]; exact h)
@@ -388,50 +400,141 @@ namespace Geometry.HilbertAxioms3D
         intro a b c h
         have h1 := G.collinear_of_between h
         rw [G.collinear_def] at h1
+        let ⟨l, ha, hb, hc⟩ := h1
+        have hne : a.val ≠ b.val := by
+          have hne := G.between_ne h
+          rw [List.pairwise_iff_getElem] at hne
+          specialize hne 0 1 (by norm_num) (by norm_num) (by decide)
+          exact hne
 
+        have : l ⊆ pl := by
+          apply G.line_in_plane_if_two_points_in_plane hne
+          exact ha
+          exact hb
+          exact a.property
+          exact b.property
 
-      -- exists_three_noncollinear_points :=
-      --   let ⟨⟨a, b, c⟩, h1, h2, h3, h4, h5⟩ := G.exists_three_noncollinear_points pl
-      --   ⟨⟨⟨a, h1⟩, ⟨b, h2⟩, ⟨c, h3⟩⟩, by
-      --       sorry
-      --   , h5⟩
+        use ⟨l, this⟩
+        simp only [Membership.mem]
+        simp only [ha, hb, hc, and_self]
 
-      -- pasch_axiom{A B C}(h1 l h2) :=
-      --   have t1: pl = G.mk_plane A B C h1 := by
-      --     apply G.unique_plane_from_three_points A B C pl h1
-      --     exact A.property
-      --     exact B.property
-      --     exact C.property
-      --   have t2: l.val ⊆ (G.mk_plane A B C h1).val := by
-      --     rw [← t1]
-      --     exact l.property
-      --   have t3: (∃ P, G.OnSegment A P B ∧ P ∈ l.val) := by
-      --     let ⟨P, hP1, hP2⟩ := h2
-      --     use P
-      --     and_intros
-      --     . simp only at hP1
-      --       rw [G.OnSegment_def]
-      --       rw [Subtype.eq_iff, Subtype.eq_iff] at hP1
-      --       exact hP1
-      --     . exact hP2
+      exists_three_noncollinear_points :=
+        let ⟨⟨a, b, c⟩, h1, h2, h3, h4, h5⟩ := G.exists_three_noncollinear_points pl
+        ⟨⟨⟨a, h1⟩, ⟨b, h2⟩, ⟨c, h3⟩⟩, by
+            apply List.Pairwise.of_map (fun (a: {p: Point // p ∈ pl})  ↦ a.val) _ h4
+            intro a b
+            simp only [ne_eq]
+            rw [Subtype.mk_eq_mk]
+            simp only [imp_self]
+        , by
+            simp only [G.collinear_def, not_exists] at h5
+            simp only [Subtype.exists, not_exists]
+            intro x
+            apply h5
+        ⟩
 
-      --   let ⟨Q, hQ⟩ := G.pasch_axiom h1 l.val t2 t3
-      --   have hQ1: Q∈ pl := by
-      --     apply l.property
-      --     exact hQ.2
+      pasch_axiom{A' B' C'}{l'}(h1 h2) :=
+        let ⟨A, hA⟩ := A'
+        let ⟨B, hB⟩ := B'
+        let ⟨C, hC⟩ := C'
+        let ⟨l, hl⟩ := l'
 
-      --   ⟨⟨Q, hQ1⟩, by
-      --       repeat rw [G.OnSegment_def] at hQ
-      --       simp only [Subtype.eq_iff];
-      --       exact hQ
-      --   ⟩
+        have hne: A ≠ B := by
+          intro hE
 
-      collinear_def := by
-        intro a b c
-        simp only [G.collinear_def, Subtype.exists, exists_and_left, exists_prop]
+          by_cases t1: A = C
+          . have t2: ∀ D, A ≠ D → D ∈ pl → False := by
+              intro D had hD
+              let ⟨l, hAl, hDl⟩  := G.mk_line had
+              have : l ⊆ pl := by
+                apply G.line_in_plane_if_two_points_in_plane had
+                exact hAl
+                exact hDl
+                exact hA
+                exact hD
+              apply h1
+              use ⟨l, this⟩
+              simp only [Membership.mem]
+              and_intros
+              . exact hAl
+              . rw [← hE]; exact hAl
+              . rw [← t1]; exact hAl
 
-      -- OnSegment_def(a b c) := by
-      --   simp only [OnSegment]
+            let ⟨⟨D, E, F⟩ , ⟨hD, hE, hF, hne, hnc⟩⟩  := G.exists_three_noncollinear_points pl
+            by_cases t3: A = D
+            . have : D ≠ E := by
+                rw [List.pairwise_iff_getElem] at hne
+                specialize hne 0 1 (by norm_num) (by norm_num) (by decide)
+                exact hne
+              apply t2 E
+              . rw [t3]
+                exact this
+              . exact hE
+            . apply t2 D
+              . exact t3
+              . exact hD
+          .
+            let ⟨l, hAl, hCl⟩  := G.mk_line t1
+            have : l ⊆ pl := by
+              apply G.line_in_plane_if_two_points_in_plane t1
+              exact hAl
+              exact hCl
+              exact hA
+              exact hC
+            apply h1
+            use ⟨l, this⟩
+            simp only [Membership.mem]
+            and_intros
+            . exact hAl
+            . rw [← hE]; exact hAl
+            . exact hCl
+
+        have t4: ¬G.Collinear A B C := by
+          rw [G.collinear_def, not_exists]
+          simp only [Membership.mem, not_exists]  at h1
+          intro l ⟨hA1, hB1, hC1⟩
+          have : l ⊆ pl := by
+            apply G.line_in_plane_if_two_points_in_plane hne
+            exact hA1
+            exact hB1
+            exact hA
+            exact hB
+          apply h1 ⟨l, this⟩
+          and_intros
+          exact hA1
+          exact hB1
+          exact hC1
+
+        have t1: pl = G.mk_plane t4 := by
+          apply G.unique_plane_from_three_points t4
+          exact hA
+          exact hB
+          exact hC
+        have t2: l ⊆ (G.mk_plane t4).val := by
+          rw [← t1]
+          exact hl
+        have t3: (∃ P, G.OnSegment A P B ∧ P ∈ l) := by
+          let ⟨P, hP1, hP2⟩ := h2
+          use P
+          and_intros
+          . simp only at hP1
+            rw [G.OnSegment_def]
+            rw [Subtype.eq_iff, Subtype.eq_iff] at hP1
+            exact hP1
+          . exact hP2
+
+        let ⟨Q, hQ⟩ := G.pasch_axiom t4 t2 t3
+
+        have hQ1: Q ∈ pl := by
+          apply hl
+          exact hQ.2
+
+        ⟨⟨Q, hQ1⟩, by
+            repeat rw [G.OnSegment_def] at hQ
+            simp only [Subtype.eq_iff]
+            exact hQ
+        ⟩
+
     }
 
   /-- Induce a 1D Hilbert axioms structure on points lying on a line in 3D space. -/
