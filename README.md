@@ -14,5 +14,5 @@ def MyAxioms.Constraint.not_coincide {α : Type}(l: List α) : → Prop
     := l.Pairwise (· ≠ ·)
 ```
 
-并定义一个高效的tactic，例如 `not_coincide_simp` 来抽取其中两个元素不相等的证明（来自 `O群管家` 的建议）。
+并定义一个高效的tactic，例如 `not_coincide_simp` 来抽取其中两个元素不相等的证明（来自 [@D-eval](https://github.com/D-eval) 的建议）。
 
