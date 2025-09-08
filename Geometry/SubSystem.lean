@@ -1,10 +1,10 @@
 import Geometry.Basic
 import Geometry.Connections
+import Geometry.Order
 import Mathlib.Tactic.Use
 import Mathlib.Logic.Equiv.Defs
 import Mathlib.Tactic.DefEqTransformations
 import Mathlib.Tactic.Contrapose
-import Mathlib.Tactic.NormNum
 
 namespace Geometry.HilbertAxioms1D
   def transfer {Point1 Point2 : Type} (e : Point2 ≃ Point1) (h1 : HilbertAxioms1D Point1) : HilbertAxioms1D Point2 :=

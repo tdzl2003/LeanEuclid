@@ -1,6 +1,7 @@
 import Geometry.Basic
 import Geometry.Connections
 import Mathlib.Tactic.ByContra
+import Mathlib.Tactic.NormNum
 import Mathlib.Data.Set.Basic
 import Mathlib.Data.Finset.Basic
 import Mathlib.Data.List.Basic
@@ -8,6 +9,77 @@ import Mathlib.Data.List.Basic
 
 namespace Geometry.HilbertAxioms1D
   variable {Point: Type}[G: HilbertAxioms1D Point]
+
+  /-- theorem II.3 Of any three points situated on a straight line, there is always one and only one which lies Between the other two. -/
+  theorem between_trichotomy(a b c: Point): a ≠ b → b ≠ c → a ≠ c →
+      (G.Between a b c ∨ G.Between b a c ∨ G.Between a c b) ∧
+      ¬(G.Between a b c ∧ G.Between b a c) ∧
+      ¬(G.Between a b c ∧ G.Between a c b) ∧
+      ¬(G.Between b a c ∧ G.Between a c b) := by
+    sorry
+
+  /--
+    If B is between A and C, and C is between B and D, then B is also between A and D, and C is also between A and D.
+  -/
+  theorem between_transitivity {A B C D : Point} :
+      G.Between A B C → G.Between B C D → G.Between A B D ∧ G.Between A C D := by
+    sorry
+
+  /--
+    If B is between A and C, and C is between A and D, then B is also between A and D, and C is also between B and D.
+  -/
+  theorem between_transitivity' {A B C D : Point} :
+      G.Between A B C → G.Between A C D → G.Between A B D ∧ G.Between B C D := by
+    sorry
+
+  /--
+    theorem II.4: Any four points A, B, C, D of a straight line can always be so arranged that B
+    shall lie between A and C and also between A and D, and, furthermore, that C shall
+    lie between A and D and also between B and D.
+  -/
+  theorem four_points_ordering{a b c d : Point} :
+      a ≠ b → a ≠ c → a ≠ d → b ≠ c → b ≠ d → c ≠ d →
+      ∃ (a' b' c' d' : Point),
+        ({a', b', c', d'}: Set Point) =  {a,b,c,d} ∧
+        (G.Between a' b' c' ∧ G.Between a' b' d' ∧ G.Between a' c' d' ∧ G.Between b' c' d') :=
+  by
+    sorry
+
+  /--
+    Theorem 3. Between any two points of a straight line, there always exists an
+    unlimited number of points.
+  -/
+  theorem infinite_points_between (A B : Point) (hNe : A ≠ B) :
+      ∀ (F : Finset Point), ∃ (P : Point), Between A P B ∧ P ∉ F :=
+  by
+    sorry
+
+  /-- Definition of a linearly ordered list where for any three indices i < j < k,
+    the point at j is between the points at i and k. -/
+  def LinearOrderedPointList (L : List Point) : Prop :=
+    ∀ (i j k : Fin L.length), i.val < j.val → j.val < k.val → Between (L.get i) (L.get j) (L.get k)
+
+  /-- Theorem 4.1 : For any finite set of points on a straight line, there exists a linearly ordered list
+      of these points, and only two such lists exist (the forward and reverse order). -/
+  theorem linear_ordering_of_collinear_points[G: HilbertAxioms1D Point](S : Finset Point) :
+      ∃ (L : List Point),
+        L.toFinset = S ∧
+        List.Nodup L ∧
+        LinearOrderedPointList L :=
+  by
+    admit
+
+  /-- Theorem 4.2 reverse order is also LinearOrderedPointList -/
+  theorem linear_ordering_reverse(L: List Point):
+      LinearOrderedPointList L →
+      LinearOrderedPointList (L.reverse) :=
+  by
+    sorry
+
+end Geometry.HilbertAxioms1D
+
+namespace Geometry.HilbertAxioms2D
+  variable {Point: Type}[G: HilbertAxioms2D Point]
 
 
   /-- 根据公理I.7.2，直线外恒有一点 -/
@@ -33,8 +105,7 @@ namespace Geometry.HilbertAxioms1D
     else
       ⟨A, hA⟩
 
-  theorem lies_on_mk_line_of_between{a b c: Point}(hne: a≠c)(h: Between a b c):
-    b ∈ (mk_line hne).val :=
+  theorem lies_on_mk_line_of_between{a b c: Point}(hne: a≠c)(h: Between a b c): b ∈ (mk_line hne).val :=
   by
     have h := G.collinear_of_between h
     rw [collinear_def] at h
@@ -201,77 +272,6 @@ namespace Geometry.HilbertAxioms1D
 
     ⟨b, hFinal⟩
 
-
-  /-- theorem II.3 Of any three points situated on a straight line, there is always one and only one which lies Between the other two. -/
-  theorem between_trichotomy(a b c: Point): a ≠ b → b ≠ c → a ≠ c →
-      (G.Between a b c ∨ G.Between b a c ∨ G.Between a c b) ∧
-      ¬(G.Between a b c ∧ G.Between b a c) ∧
-      ¬(G.Between a b c ∧ G.Between a c b) ∧
-      ¬(G.Between b a c ∧ G.Between a c b) := by
-    sorry
-
-  /--
-    If B is between A and C, and C is between B and D, then B is also between A and D, and C is also between A and D.
-  -/
-  theorem between_transitivity {A B C D : Point} :
-      G.Between A B C → G.Between B C D → G.Between A B D ∧ G.Between A C D := by
-    sorry
-
-  /--
-    If B is between A and C, and C is between A and D, then B is also between A and D, and C is also between B and D.
-  -/
-  theorem between_transitivity' {A B C D : Point} :
-      G.Between A B C → G.Between A C D → G.Between A B D ∧ G.Between B C D := by
-    sorry
-
-  /--
-    theorem II.4: Any four points A, B, C, D of a straight line can always be so arranged that B
-    shall lie between A and C and also between A and D, and, furthermore, that C shall
-    lie between A and D and also between B and D.
-  -/
-  theorem four_points_ordering{a b c d : Point} :
-      a ≠ b → a ≠ c → a ≠ d → b ≠ c → b ≠ d → c ≠ d →
-      ∃ (a' b' c' d' : Point),
-        ({a', b', c', d'}: Set Point) =  {a,b,c,d} ∧
-        (G.Between a' b' c' ∧ G.Between a' b' d' ∧ G.Between a' c' d' ∧ G.Between b' c' d') :=
-  by
-    sorry
-
-  /--
-    Theorem 3. Between any two points of a straight line, there always exists an
-    unlimited number of points.
-  -/
-  theorem infinite_points_between (A B : Point) (hNe : A ≠ B) :
-      ∀ (F : Finset Point), ∃ (P : Point), Between A P B ∧ P ∉ F :=
-  by
-    sorry
-
-  /-- Definition of a linearly ordered list where for any three indices i < j < k,
-    the point at j is between the points at i and k. -/
-  def LinearOrderedPointList (L : List Point) : Prop :=
-    ∀ (i j k : Fin L.length), i.val < j.val → j.val < k.val → Between (L.get i) (L.get j) (L.get k)
-
-  /-- Theorem 4.1 : For any finite set of points on a straight line, there exists a linearly ordered list
-      of these points, and only two such lists exist (the forward and reverse order). -/
-  theorem linear_ordering_of_collinear_points[G: HilbertAxioms1D Point](S : Finset Point) :
-      ∃ (L : List Point),
-        L.toFinset = S ∧
-        List.Nodup L ∧
-        LinearOrderedPointList L :=
-  by
-    admit
-
-  /-- Theorem 4.2 reverse order is also LinearOrderedPointList -/
-  theorem linear_ordering_reverse(L: List Point):
-      LinearOrderedPointList L →
-      LinearOrderedPointList (L.reverse) :=
-  by
-    sorry
-
-end Geometry.HilbertAxioms1D
-
-namespace Geometry.HilbertAxioms2D
-  variable {Point: Type}[G: HilbertAxioms2D Point]
 
   theorem onSameSide.not_liesOn(l: G.Line)(a b: Point):
       G.SameSideOfLine l a b → ¬ a ∈ l ∧ ¬ b ∈ l :=
