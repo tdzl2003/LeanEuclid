@@ -199,7 +199,6 @@ namespace Geometry
     attribute [instance] Defs.instDecidableMemLine
     attribute [instance] Defs.instMemPlane
 
-
     def Collinear{Point}[G:Defs Point](a b c: Point):Prop :=
       ∃ l:G.Line, a ∈ l ∧ b ∈ l ∧ c ∈ l
 
@@ -274,8 +273,9 @@ namespace Geometry
       B, C. Then, if the straight line a passes through a point of the segment AB, it will
       also pass through either a point of the segment BC or a point of the segment AC.-/
       pasch_axiom {A B C: Point}{l: Line}
-        (h1: ¬Collinear A B C)(h2: l ⊆ (mk_plane h1).val)(h3: ∃ P: Point, Between A P B ∧ P ∈ l)
-        (hA: ¬A ∈ l)(hB: ¬B ∈ l )(hc: ¬C ∈ l) :
+        (h1: ¬Collinear A B C)(h2: l ⊆ (mk_plane h1).val)
+        (hA: ¬A ∈ l)(hB: ¬B ∈ l )(hC: ¬C ∈ l)
+        (h3: ∃ P: Point, Between A P B ∧ P ∈ l) :
           {Q: Point // (Between B Q C ∨ Between A Q C) ∧ Q ∈ l}
 
     instance {Point: Type}[G: Orders Point]: Membership Point (Segment Point) where

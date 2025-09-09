@@ -1,5 +1,4 @@
 import Geometry.Basic
-import Geometry.Segment
 import Mathlib.Tactic.Linarith
 
 namespace Geometry

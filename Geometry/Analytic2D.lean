@@ -114,15 +114,13 @@ namespace Geometry.Analytic2D
 
   def Collinear (a b c : Point) : Prop := ∃ l : Line, a ∈ l ∧ b ∈ l ∧ c ∈ l
 
-  def OnSegment(a b c: Point): Prop := Between a b c ∨ b = a ∨ b = c
-
   theorem collinear_of_between{a b c: Point}: Between a b c → Collinear a b c :=
   by
     sorry
 
-  def pasch_axiom {A B C: Point}{l: Line}(h: ¬Collinear A B C):
-      (∃ P: Point, OnSegment A P B ∧ P ∈ l) →
-      {Q: Point // (OnSegment B Q C ∨  OnSegment A Q C) ∧ Q ∈ l} :=
+  def pasch_axiom {A B C: Point}{l: Line}(h: ¬Collinear A B C)(hA: ¬A ∈ l)(hB: ¬B ∈ l )(hc: ¬C ∈ l):
+      (∃ P: Point, Between A P B ∧ P ∈ l) →
+      {Q: Point // (Between B Q C ∨  Between A Q C) ∧ Q ∈ l} :=
   by
     sorry
 
@@ -133,27 +131,28 @@ namespace Geometry.Analytic2D
   def mk_line_intersection{l1 l2: Line}(hne: l1 ≠ l2)(he: ∃ p, p∈l1 ∧ p ∈ l2) : {p: Point // p ∈ l1 ∧ p ∈ l2} :=
     sorry
 
-  noncomputable instance: HilbertAxioms2D Point where
+  noncomputable instance: HilbertAxioms2D.Defs Point where
     instDecidableEq := by infer_instance
     Line := Line
     instMemLine := by infer_instance
     instDecidableMemLine := by infer_instance
-    Between := Between
-    between_ne := between_ne
-    between_symm := between_symm
-    extension_exists := extension_exists
+
+  noncomputable instance: HilbertAxioms2D.Connections Point where
     mk_line := mk_line
     mk_line_intersection := mk_line_intersection
     unique_line_from_two_points := unique_line_from_two_points
     line_exists_two_points := line_exists_two_points
-    Collinear := Collinear
-    collinear_def{a b c} := by simp only [Collinear]
-    collinear_of_between := collinear_of_between
-
     exists_three_noncollinear_points := exists_three_noncollinear_points
-    pasch_axiom := pasch_axiom
-    OnSegment := OnSegment
-    OnSegment_def{a b c} := by simp only [OnSegment]
+
+  noncomputable instance: HilbertAxioms2D.Orders Point where
+    Between := Between
+    between_ne := between_ne
+    between_symm := between_symm
+    extension_exists := extension_exists
+    collinear_of_between := collinear_of_between
+    pasch_axiom:=pasch_axiom
+
+  noncomputable instance: HilbertAxioms2D Point where
 
   section
     abbrev Segment := Geometry.Segment Point

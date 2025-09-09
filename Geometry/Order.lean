@@ -242,7 +242,90 @@ namespace Geometry.HilbertAxioms2D
       . exact hf1
       . exact hl2.1
 
-    have ⟨b, hb1, hb2⟩  := G.pasch_axiom t1 (sorry) (sorry) (sorry) t2
+    have hal2: a ∉ l2 := by
+      intro hal2
+      have h_col : Collinear a e g := by
+        use l2
+
+      -- 目标推导afc共线
+      -- aeg、aef共线推出afg共线
+      have h_afg : Collinear a f g := by
+        apply collinear_comp hae
+        . apply collinear_of_between
+          exact hf1
+        . exact h_col
+
+      -- fga、fgc共线推出afc共线
+      have h_afc : Collinear f a c := by
+        apply collinear_comp hg2
+        . apply collinear_comm_rotate
+          exact h_afg
+        . apply collinear_comm_right
+          apply collinear_of_between
+          exact hg1
+
+      apply t1
+      apply collinear_comm_left
+      exact h_afc
+
+    have hfl2: f ∉ l2 := by
+      intro hfl2
+      have h_feg : Collinear f e g := by
+        use l2
+
+      have h_fec : Collinear f e c := by
+        apply collinear_comp hg2
+        . apply collinear_comm_right
+          exact h_feg
+        . apply collinear_comm_right
+          apply collinear_of_between
+          exact hg1
+
+      have h_fac : Collinear f c a := by
+        apply collinear_comp hfe
+        . exact h_fec
+        . apply collinear_comm_cross
+          apply collinear_of_between
+          exact hf1
+
+      apply t1
+      apply collinear_comm_rotate
+      apply collinear_comm_rotate
+      exact h_fac
+
+    have hcl2: c ∉ l2 := by
+      intro hcl2
+
+      have h_ecg : Collinear e c g := by
+        use l2
+        simp only [hl2, hcl2, and_self]
+
+      have h_cfe : Collinear c f e := by
+        have: c≠g := by
+          have := G.between_ne hg1
+          apply this.select' 1 2
+          all_goals norm_num
+        apply collinear_comp this
+        . apply collinear_comm_rotate
+          apply collinear_of_between
+          exact hg1
+        . apply collinear_comm_rotate
+          exact h_ecg
+
+      have h_fac : Collinear f c a := by
+        apply collinear_comp hfe
+        . apply collinear_comm_rotate
+          exact h_cfe
+        . apply collinear_comm_cross
+          apply collinear_of_between
+          exact hf1
+
+      apply t1
+      apply collinear_comm_rotate
+      apply collinear_comm_rotate
+      exact h_fac
+
+    have ⟨b, hb1, hb2⟩  := G.pasch_axiom t1 hal2 hfl2 hcl2 t2
 
     have hFinal: Between a b c  := by
       have t3: ¬ Between f b c := by
@@ -292,54 +375,6 @@ namespace Geometry.HilbertAxioms2D
             exact he_in_lfc
 
         exact t1 this
-
-      -- have t4: b ≠ a := by
-      --   intro he
-      --   -- 如果b=a，那么e=a，矛盾
-      --   have : e = a := by
-      --     let l3 := mk_line hae
-      --     have: l2 ≠ l3 := by
-      --       have hl3: a ∈ l3.val := l3.property.1
-      --       have hg_l2: g ∈ l2 := hl2.2
-
-      --       intro h_eq
-      --       have hg_l3: g ∈ l3.val := by rw [h_eq] at hg_l2; exact hg_l2
-
-      --       have h_col : Collinear a e g := by
-      --         apply collinear_comm_right
-      --         rw [in_mk_line_iff_collinear hae]
-      --         exact hg_l3
-
-      --       -- 目标推导afc共线
-      --       -- aeg、aef共线推出afg共线
-      --       have h_afg : Collinear a f g := by
-      --         apply collinear_comp hae
-      --         . apply collinear_of_between
-      --           exact hf1
-      --         . exact h_col
-
-      --       -- fga、fgc共线推出afc共线
-      --       have h_afc : Collinear f a c := by
-      --         apply collinear_comp hg2
-      --         . apply collinear_comm_rotate
-      --           exact h_afg
-      --         . apply collinear_comm_right
-      --           apply collinear_of_between
-      --           exact hg1
-
-      --       apply t1
-      --       apply collinear_comm_left
-      --       exact h_afc
-
-      --     apply common_point_of_lines this
-      --     . exact hl2.1
-      --     . exact l3.property.2
-      --     . rw [← he]
-      --       exact hb2
-      --     . exact l3.property.1
-
-      --   apply hae
-      --   rw [this]
 
       simp only [t3, false_or, or_false] at hb1
       exact hb1

@@ -20,6 +20,7 @@ namespace Geometry.HilbertAxioms1D
       have h' := h1.between_ne h
       rw [show [e a, e b, e c] = ([a, b, c].map (fun v ↦ e v)) by simp only [List.map_cons,
         List.map_nil]] at h'
+      unfold List.Distinct at h'
       rw [List.pairwise_map] at h'
       apply List.Pairwise.imp _ h'
       intro a b
@@ -64,9 +65,6 @@ namespace Geometry.HilbertAxioms1D
         simp only [ne_eq, EmbeddingLike.apply_eq_iff_eq, a', b']
         exact h
       exact ⟨⟨a', b'⟩, hne⟩
-    OnSegment_def := by
-      intro a b c
-      simp only [OnSegment, h1.OnSegment_def]
   }
 
 end Geometry.HilbertAxioms1D
@@ -89,6 +87,7 @@ namespace Geometry.HilbertAxioms2D
         intro ⟨a,ha⟩ ⟨b,hb⟩  ⟨c,hc⟩ h
         simp only at h
         have h := G.between_ne h
+        unfold List.Distinct at h
         apply List.Pairwise.of_map (fun (a: {p: Point // p ∈ l})  ↦ a.val) _ h
         intro a b
         simp only [ne_eq]
@@ -114,7 +113,6 @@ namespace Geometry.HilbertAxioms2D
         let ⟨b, hb⟩ := between_exists hne
         have hb1 : b ∈ l := by
           have h:= G.collinear_of_between hb
-          rw [G.collinear_def] at h
           obtain ⟨l', h1, h2, h3⟩ := h
           rw [G.unique_line_from_two_points hne ha hc]
           rw [← G.unique_line_from_two_points hne h1 h3]
@@ -128,7 +126,6 @@ namespace Geometry.HilbertAxioms2D
         let ⟨d, hd⟩ := G.extension_exists hne
         have hd1 : d ∈ l := by
           have h:= G.collinear_of_between hd
-          rw [G.collinear_def] at h
           obtain ⟨l', h1, h2, h3⟩ := h
           rw [G.unique_line_from_two_points hne ha hc]
           rw [← G.unique_line_from_two_points hne h1 h2]
@@ -138,20 +135,16 @@ namespace Geometry.HilbertAxioms2D
       line_exists_two_points :=
         let ⟨⟨a, b⟩, ⟨h1, h2, h3⟩⟩ := G.line_exists_two_points l
         ⟨⟨⟨a, h2⟩, ⟨b, h3⟩⟩, by simp only [ne_eq, Subtype.mk.injEq]; exact h1⟩
-
-      OnSegment_def := by
-        intro a b c
-        simp only [Subtype.eq_iff]
     }
 end Geometry.HilbertAxioms2D
 
 namespace Geometry.HilbertAxioms3D
   def not_collinear{Point: Type}[G:HilbertAxioms3D Point]{A B C: Point}(hne: A≠B):
-    ¬ G.Collinear A B C ↔ ∃ l: G.Line, A ∈ l ∧ B ∈ l ∧ C ∉ l :=
+    ¬ Collinear A B C ↔ ∃ l: G.Line, A ∈ l ∧ B ∈ l ∧ C ∉ l :=
   by
-    rw [G.collinear_def]
     constructor
-    . rw [not_exists]
+    . unfold Collinear
+      rw [not_exists]
       intro h
       let l := mk_line hne
       use l
@@ -172,16 +165,13 @@ namespace Geometry.HilbertAxioms3D
     by_cases hA': A∈ l
     . by_cases hB': B ∈ l
       . have hne: A≠B := by
-          simp only [List.pairwise_cons, List.mem_cons, List.not_mem_nil, or_false,
-            forall_eq_or_imp, forall_eq, IsEmpty.forall_iff, implies_true, List.Pairwise.nil,
-            and_self, and_true] at hne
-          exact hne.1.1
+          apply hne.select' 0 1
+          all_goals norm_num
         have hC': C ∉ l := by
           intro h
           apply hnc
           have : l = G.mk_line hne := by
             apply G.unique_line_from_two_points hne hA' hB'
-          rw [collinear_def]
           use l
         use C
       . use B
@@ -219,7 +209,6 @@ namespace Geometry.HilbertAxioms3D
     contrapose
     rw [not_not, not_not]
     intro h
-    rw [G.collinear_def] at h
     let ⟨l, h⟩ := h
     have ⟨pl, hl, hD⟩ := coplannar_of_collinear l D
     use pl
@@ -245,10 +234,8 @@ namespace Geometry.HilbertAxioms3D
       let ⟨⟨A, B, C, D⟩ , h1, h2⟩ := G.space_exists_four_noncoplanar_points
       if hA: A ∈ l then
         have hAB: A ≠ B := by
-          simp only [ne_eq, List.pairwise_cons, List.mem_cons, List.not_mem_nil, or_false,
-            forall_eq_or_imp, forall_eq, IsEmpty.forall_iff, implies_true, List.Pairwise.nil,
-            and_self, and_true] at h1
-          exact h1.1.1
+          apply h1.select' 0 1
+          all_goals norm_num
         if hB: B ∈ l then
           have hl: l = mk_line hAB := by
             apply G.unique_line_from_two_points hAB hA hB
@@ -272,10 +259,8 @@ namespace Geometry.HilbertAxioms3D
     if hA : A = p then
       have hB: p ≠ B := by
         rw [← hA]
-        simp only [List.pairwise_cons, List.mem_cons, List.not_mem_nil, or_false,
-          forall_eq_or_imp, forall_eq, IsEmpty.forall_iff, implies_true, List.Pairwise.nil,
-          and_self, and_true] at h4
-        exact h4.1.1
+        apply h4.select' 0 1
+        all_goals norm_num
 
       let ⟨l, hl⟩ := G.mk_line hB
       ⟨l, by
@@ -326,6 +311,7 @@ namespace Geometry.HilbertAxioms3D
       Between(a b c) := Between a.val b.val c.val,
       between_ne{a b c}(h) := by
         have h := G.between_ne h
+        unfold List.Distinct at h
         apply List.Pairwise.of_map (fun (a: SubPoint)  ↦ a.val) _ h
         intro a b
         simp only [ne_eq]
@@ -339,7 +325,6 @@ namespace Geometry.HilbertAxioms3D
 
         have hd1 : d ∈ pl := by
           have h:= G.collinear_of_between hd
-          rw [G.collinear_def] at h
           obtain ⟨l, h1, h2, h3⟩ := h
           have hl: l ⊆ pl := by
             intro p hp
@@ -353,14 +338,6 @@ namespace Geometry.HilbertAxioms3D
           apply hl
           exact h3
         ⟨⟨d, hd1⟩, hd⟩
-
-      Collinear(a b c) := ∃ l : SubLine, a ∈ l ∧ b ∈ l ∧ c ∈ l
-
-      collinear_def{a b c} := by
-        rfl
-
-      OnSegment_def{a b c} := by
-        simp only [OnSegment]
 
       mk_line{a c}(h) :=
         let ⟨l, hl1, hl2⟩ := G.mk_line (by rw [Subtype.coe_ne_coe]; exact h)
@@ -409,13 +386,11 @@ namespace Geometry.HilbertAxioms3D
       collinear_of_between := by
         intro a b c h
         have h1 := G.collinear_of_between h
-        rw [G.collinear_def] at h1
         let ⟨l, ha, hb, hc⟩ := h1
         have hne : a.val ≠ b.val := by
           have hne := G.between_ne h
-          rw [List.pairwise_iff_getElem] at hne
-          specialize hne 0 1 (by norm_num) (by norm_num) (by decide)
-          exact hne
+          apply hne.select' 0 1
+          all_goals norm_num
 
         have : l ⊆ pl := by
           apply G.line_in_plane_if_two_points_in_plane hne
@@ -431,19 +406,20 @@ namespace Geometry.HilbertAxioms3D
       exists_three_noncollinear_points :=
         let ⟨⟨a, b, c⟩, h1, h2, h3, h4, h5⟩ := G.exists_three_noncollinear_points pl
         ⟨⟨⟨a, h1⟩, ⟨b, h2⟩, ⟨c, h3⟩⟩, by
+            unfold List.Distinct at h4
             apply List.Pairwise.of_map (fun (a: {p: Point // p ∈ pl})  ↦ a.val) _ h4
             intro a b
             simp only [ne_eq]
             rw [Subtype.mk_eq_mk]
             simp only [imp_self]
         , by
-            simp only [G.collinear_def, not_exists] at h5
-            simp only [Subtype.exists, not_exists]
+            simp only [Collinear, not_exists] at h5
+            simp only [HilbertAxioms2D.Collinear, Subtype.exists, not_exists]
             intro x
             apply h5
         ⟩
 
-      pasch_axiom{A' B' C'}{l'}(h1 h2) :=
+      pasch_axiom{A' B' C'}{l'}(h1 hA' hB' hC' h2) :=
         let ⟨A, hA⟩ := A'
         let ⟨B, hB⟩ := B'
         let ⟨C, hC⟩ := C'
@@ -473,9 +449,8 @@ namespace Geometry.HilbertAxioms3D
             let ⟨⟨D, E, F⟩ , ⟨hD, hE, hF, hne, hnc⟩⟩  := G.exists_three_noncollinear_points pl
             by_cases t3: A = D
             . have : D ≠ E := by
-                rw [List.pairwise_iff_getElem] at hne
-                specialize hne 0 1 (by norm_num) (by norm_num) (by decide)
-                exact hne
+                apply hne.select' 0 1
+                all_goals norm_num
               apply t2 E
               . rw [t3]
                 exact this
@@ -499,9 +474,10 @@ namespace Geometry.HilbertAxioms3D
             . rw [← hE]; exact hAl
             . exact hCl
 
-        have t4: ¬G.Collinear A B C := by
-          rw [G.collinear_def, not_exists]
-          simp only [Membership.mem, not_exists]  at h1
+        have t4: ¬Collinear A B C := by
+          unfold Collinear
+          rw [not_exists]
+          simp only [HilbertAxioms2D.Collinear, Membership.mem, not_exists] at h1
           intro l ⟨hA1, hB1, hC1⟩
           have : l ⊆ pl := by
             apply G.line_in_plane_if_two_points_in_plane hne
@@ -523,24 +499,21 @@ namespace Geometry.HilbertAxioms3D
         have t2: l ⊆ (G.mk_plane t4).val := by
           rw [← t1]
           exact hl
-        have t3: (∃ P, G.OnSegment A P B ∧ P ∈ l) := by
+        have t3: (∃ P, G.Between A P B ∧ P ∈ l) := by
           let ⟨P, hP1, hP2⟩ := h2
           use P
           and_intros
           . simp only at hP1
-            rw [G.OnSegment_def]
-            rw [Subtype.eq_iff, Subtype.eq_iff] at hP1
             exact hP1
           . exact hP2
 
-        let ⟨Q, hQ⟩ := G.pasch_axiom t4 t2 t3
+        let ⟨Q, hQ⟩ := G.pasch_axiom t4 t2 (by exact hA') (by exact hB') (by exact hC') t3
 
         have hQ1: Q ∈ pl := by
           apply hl
           exact hQ.2
 
         ⟨⟨Q, hQ1⟩, by
-            repeat rw [G.OnSegment_def] at hQ
             simp only [Subtype.eq_iff]
             exact hQ
         ⟩
@@ -554,12 +527,12 @@ namespace Geometry.HilbertAxioms3D
       let pl := mk_plane_through_line l
       let l': {l': G.Line // l' ⊆ pl.val} := ⟨l, pl.property⟩
       let G' := (onPlane pl.val).onLine l'
-      let e1 : {p // p ∈ l} ≃ {p: {p // p ∈ pl.val} // p ∈ l'} :=
+      let e1 : {p // p ∈ l} ≃ {p: {p // p ∈ pl.val} // p.val ∈ l'.val} :=
         { toFun := fun x =>
             have h1: x.val ∈ pl.val := by
               have h:= pl.property
               exact h x.val x.property
-            have h2 {p}: ⟨x, p⟩ ∈ l' := by
+            have h2: x.val ∈ l'.val := by
               simp only [Membership.mem, l']
               exact x.property
             ⟨⟨x.val, h1⟩, h2⟩
