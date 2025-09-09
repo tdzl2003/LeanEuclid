@@ -109,7 +109,7 @@ namespace Geometry.Euclid2D
       )
     axiom not_exists_inside_line: ∀ (poly: Polygon), ¬ ∃ l:Line, ∀ p ∈ l, inside poly p
 
-    -- TODO: prove this: https://chatgpt.com/s/t_68bf7a32774081919c7544c7760ccb46
+    -- TODO: prove this: https://chatgpt.com/share/68bfa43b-8944-8001-839e-11162a678b6c
     theorem exists_outside_line: ∀ (poly: Polygon), poly.isSimple → ∃ l:Line, ∀ p ∈ l, outside poly p := by
       sorry
 
