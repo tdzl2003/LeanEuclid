@@ -15,22 +15,22 @@ namespace Geometry.Analytic2D
     add(a: Point)(b: Point) :=  Point.mk (a.x+b.x) (a.y+b.y)
 
   def Between(a: Point)(b: Point)(c: Point): Prop :=
-    ∃ r: ℝ, r > 0 ∧ r < 1 ∧ a = b * r + c* (r-1)
+    a ≠ c ∧ ∃ r: ℝ, r > 0 ∧ r < 1 ∧ a = b * r + c* (r-1)
 
   /-- Between relation is exclusive. -/
-  theorem between_ne(a b c: Point):
-    Between a b c → a ≠ b ∧ b ≠ c :=
+  theorem between_ne{a b c: Point}:
+    Between a b c → [a, b, c].Pairwise (· ≠ ·) :=
   by
     sorry
 
   /-- axiom II.1: If A, B, C are points of a straight line and B lies Between A and C, then B lies also Between C and A.-/
-  theorem between_symm(a b c: Point):
+  theorem between_symm{a b c: Point}:
     Between a b c → Between c b a :=
   by
     sorry
 
   /-- axiom II.2.2 If A and C are two points of a straight line, at least one point D so situated that C lies Between A and D.-/
-  def extension_exists(a c: Point)(hne: a ≠ c ):
+  def extension_exists{a c: Point}(hne: a ≠ c ):
     {d: Point // Between a c d} :=
     sorry
 
@@ -76,6 +76,10 @@ namespace Geometry.Analytic2D
     noncomputable def mk_line(a b: Point)(h: a≠b): LineRaw :=
       LineRaw.mk (b.y-a.y) (a.x-b.x) (b.x*a.y - a.x*b.y) (by sorry)
 
+    noncomputable instance (p: Point)(l: LineRaw): Decidable (LiesOn p l) := by
+      unfold LiesOn
+      exact inferInstance
+
   end LineRaw
 
   def Line := Quotient LineRaw.setoid
@@ -86,11 +90,21 @@ namespace Geometry.Analytic2D
   instance: Membership Point Line where
     mem := LiesOn
 
-  noncomputable def mk_line(a b: Point)(h: a≠b): {l: Line // a ∈ l ∧ b ∈ l} :=
+  noncomputable instance(l: Line)(a: Point): Decidable (a ∈ l) :=
+    let lraw := Quotient.out l
+    have h : LineRaw.LiesOn a lraw ↔ a∈l := by
+      have : l = ⟦lraw⟧ := by
+        rw [Quotient.eq_mk_iff_out]
+      rw [this]
+      simp only [Membership.mem, LiesOn, Quotient.lift_mk]
+
+    decidable_of_iff (LineRaw.LiesOn a lraw) h
+
+  noncomputable def mk_line{a b: Point}(h: a≠b): {l: Line // a ∈ l ∧ b ∈ l} :=
     ⟨Quotient.mk'' <| LineRaw.mk_line a b h, by sorry⟩
 
-  theorem unique_line_from_two_points(a b: Point)(l: Line)(h:  a ≠ b):
-      a ∈ l → b ∈ l → l = mk_line a b h :=
+  theorem unique_line_from_two_points{a b: Point}{l: Line}(h:  a ≠ b):
+      a ∈ l → b ∈ l → l = mk_line h :=
   by
     sorry
 
@@ -102,11 +116,11 @@ namespace Geometry.Analytic2D
 
   def OnSegment(a b c: Point): Prop := Between a b c ∨ b = a ∨ b = c
 
-  theorem collinear_of_between(a b c: Point): Between a b c → Collinear a b c :=
+  theorem collinear_of_between{a b c: Point}: Between a b c → Collinear a b c :=
   by
     sorry
 
-  def pasch_axiom {A B C: Point}(h: ¬Collinear A B C)(l: Line):
+  def pasch_axiom {A B C: Point}{l: Line}(h: ¬Collinear A B C):
       (∃ P: Point, OnSegment A P B ∧ P ∈ l) →
       {Q: Point // (OnSegment B Q C ∨  OnSegment A Q C) ∧ Q ∈ l} :=
   by
@@ -116,22 +130,30 @@ namespace Geometry.Analytic2D
       {s: Point × Point × Point // [s.1, s.2.1, s.2.2].Pairwise (· ≠ ·) ∧ ¬Collinear s.1 s.2.1 s.2.2} :=
     sorry
 
+  def mk_line_intersection{l1 l2: Line}(hne: l1 ≠ l2)(he: ∃ p, p∈l1 ∧ p ∈ l2) : {p: Point // p ∈ l1 ∧ p ∈ l2} :=
+    sorry
+
   noncomputable instance: HilbertAxioms2D Point where
+    instDecidableEq := by infer_instance
     Line := Line
-    mem_Line := by infer_instance
+    instMemLine := by infer_instance
+    instDecidableMemLine := by infer_instance
     Between := Between
     between_ne := between_ne
     between_symm := between_symm
     extension_exists := extension_exists
     mk_line := mk_line
+    mk_line_intersection := mk_line_intersection
     unique_line_from_two_points := unique_line_from_two_points
     line_exists_two_points := line_exists_two_points
-    collinear_def(a b c) := by simp only [Collinear]
+    Collinear := Collinear
+    collinear_def{a b c} := by simp only [Collinear]
     collinear_of_between := collinear_of_between
 
     exists_three_noncollinear_points := exists_three_noncollinear_points
     pasch_axiom := pasch_axiom
-    OnSegment_def(a b c) := by simp only [OnSegment]
+    OnSegment := OnSegment
+    OnSegment_def{a b c} := by simp only [OnSegment]
 
   section
     abbrev Segment := Geometry.Segment Point
