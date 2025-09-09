@@ -46,16 +46,13 @@ namespace Geometry.HilbertAxioms2D
     if hA: A ∈ l then
       if hB: B ∈ l then
         have hne: A≠B := by
-          simp only [ne_eq, List.pairwise_cons, List.mem_cons, List.not_mem_nil, or_false,
-            forall_eq_or_imp, forall_eq, false_implies, implies_true, List.Pairwise.nil, and_self,
-            and_true] at hne
-          exact hne.1.1
+          apply hne.select' 0 1
+          all_goals norm_num
         have hC: C ∉ l := by
           intro h
           apply hnc
           have : l = G.mk_line hne := by
             apply G.unique_line_from_two_points hne hA hB
-          rw [collinear_def]
           use l
         ⟨C, hC⟩
       else
@@ -77,7 +74,7 @@ namespace Geometry.HilbertAxioms2D
         have t1:∀ d, d≠a → Collinear a a c := by
           intro d hda
           let l := G.mk_line hda
-          rw [collinear_def, ← hac]
+          rw [← hac]
           refine ⟨l, ?_, ?_, ?_⟩
           · exact (G.mk_line hda).property.right   -- a ∈ l
           · exact (G.mk_line hda).property.right   -- b = a ∈ l
@@ -86,15 +83,12 @@ namespace Geometry.HilbertAxioms2D
         by_cases h: p = a
         . have : q ≠ a  := by
             rw [← h]
-            rw [List.pairwise_iff_getElem] at hpair
-            specialize hpair 0 1 (by norm_num) (by norm_num) (by decide)
-            simp only [List.getElem_cons_zero, List.getElem_cons_succ] at hpair
-            apply Ne.symm hpair
+            apply hpair.select' 1 0
+            all_goals norm_num
           apply t1 q this
         . apply t1 p h
       ·
         let l := G.mk_line hac
-        rw [collinear_def]
         refine ⟨l, ?_, ?_, ?_⟩
         · exact (G.mk_line hac).property.left   -- a ∈ l
         · exact (G.mk_line hac).property.left   -- b = a ∈ l
@@ -107,32 +101,27 @@ namespace Geometry.HilbertAxioms2D
     contradiction
 
   theorem collinear_comm_cross{a b c: Point}: Collinear a b c → Collinear c b a := by
-    rw [collinear_def, collinear_def]
     intro ⟨l, hl⟩
     use l
     simp only [hl, and_self]
 
   theorem collinear_comm_left{a b c: Point}: Collinear a b c → Collinear b a c := by
-    rw [collinear_def, collinear_def]
     intro ⟨l, hl⟩
     use l
     simp only [hl, and_self]
 
   theorem collinear_comm_right{a b c: Point}: Collinear a b c → Collinear a c b := by
-    rw [collinear_def, collinear_def]
     intro ⟨l, hl⟩
     use l
     simp only [hl, and_self]
 
   theorem collinear_comm_rotate{a b c: Point}: Collinear a b c → Collinear b c a := by
-    rw [collinear_def, collinear_def]
     intro ⟨l, hl⟩
     use l
     simp only [hl, and_self]
 
   theorem collinear_comp{a b c d: Point}(hne: a≠b): Collinear a b c → Collinear a b d → Collinear a c d := by
     intro h1 h2
-    rw [collinear_def] at h1 h2 ⊢
     rcases h1 with ⟨l1, ha1, hb1, hc1⟩
     rcases h2 with ⟨l2, ha2, hb2, hd2⟩
     -- l1 和 l2 都是包含 a,b 的直线，因此唯一性保证它们相等
@@ -162,7 +151,7 @@ namespace Geometry.HilbertAxioms3D
         have t1:∀ d, d≠a → Collinear a a c := by
           intro d hda
           let l := G.mk_line hda
-          rw [collinear_def, ← hac]
+          rw [ ← hac]
           refine ⟨l, ?_, ?_, ?_⟩
           · exact (G.mk_line hda).property.right   -- a ∈ l
           · exact (G.mk_line hda).property.right   -- b = a ∈ l
@@ -171,15 +160,12 @@ namespace Geometry.HilbertAxioms3D
         by_cases h: p = a
         . have : q ≠ a  := by
             rw [← h]
-            rw [List.pairwise_iff_getElem] at hpair
-            specialize hpair 0 1 (by norm_num) (by norm_num) (by decide)
-            simp only [List.getElem_cons_zero, List.getElem_cons_succ] at hpair
-            apply Ne.symm hpair
+            apply hpair.select' 1 0
+            all_goals norm_num
           apply t1 q this
         . apply t1 p h
       ·
         let l := G.mk_line hac
-        rw [collinear_def]
         refine ⟨l, ?_, ?_, ?_⟩
         · exact (G.mk_line hac).property.left   -- a ∈ l
         · exact (G.mk_line hac).property.left   -- b = a ∈ l

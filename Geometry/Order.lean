@@ -50,14 +50,14 @@ namespace Geometry.HilbertAxioms1D
     unlimited number of points.
   -/
   theorem infinite_points_between (A B : Point) (hNe : A ≠ B) :
-      ∀ (F : Finset Point), ∃ (P : Point), Between A P B ∧ P ∉ F :=
+      ∀ (F : Finset Point), ∃ (P : Point), G.Between A P B ∧ P ∉ F :=
   by
     sorry
 
   /-- Definition of a linearly ordered list where for any three indices i < j < k,
     the point at j is between the points at i and k. -/
   def LinearOrderedPointList (L : List Point) : Prop :=
-    ∀ (i j k : Fin L.length), i.val < j.val → j.val < k.val → Between (L.get i) (L.get j) (L.get k)
+    ∀ (i j k : Fin L.length), i.val < j.val → j.val < k.val → G.Between (L.get i) (L.get j) (L.get k)
 
   /-- Theorem 4.1 : For any finite set of points on a straight line, there exists a linearly ordered list
       of these points, and only two such lists exist (the forward and reverse order). -/
@@ -81,48 +81,14 @@ end Geometry.HilbertAxioms1D
 namespace Geometry.HilbertAxioms2D
   variable {Point: Type}[G: HilbertAxioms2D Point]
 
-  theorem between_ne'{a b c : Point}(h: Between a b c) : a≠ b ∧ b ≠ c ∧ a ≠ c := by
-    have h := between_ne h
-    simp only [ne_eq, List.pairwise_cons, List.mem_cons, List.not_mem_nil, or_false,
-      forall_eq_or_imp, forall_eq, IsEmpty.forall_iff, implies_true, List.Pairwise.nil, and_self,
-      and_true] at h
-    simp only [ne_eq, h, not_false_eq_true, and_self]
-
-  theorem collinear_of_onsegment{a b c:Point}:
-    OnSegment a b c → Collinear a b c := by
-    intro h
-    rw [OnSegment_def] at h
-    rcases h with h | h | h
-    . apply collinear_of_between h
-    . subst h
-      apply collinear_of_eq
-    . subst h
-      apply collinear_comm_cross
-      apply collinear_of_eq
-
   theorem between_not_symm_right{a b c : Point}: Between a b c → ¬ Between a c b := by
     sorry
-
-  theorem not_between_of_onsegment_symm{a b c : Point}: OnSegment a b c → ¬ Between a c b := by
-    intro h
-    rw [OnSegment_def] at h
-    rcases h with h | h | h
-    . apply between_not_symm_right h
-    . subst h
-      intro h
-      have h:= (between_ne' h).2.2
-      contradiction
-    . subst h
-      intro h
-      have h := (between_ne' h).2.1
-      contradiction
 
   theorem in_mk_line_iff_collinear{a b c : Point}(hne: a ≠ c):
     Collinear a b c ↔ b ∈ (mk_line hne).val :=
   by
     constructor
     . intro h
-      rw [collinear_def] at h
       let ⟨l, ha, hb, hc⟩ := h
       have : l = (mk_line hne).val := by
         apply G.unique_line_from_two_points
@@ -133,7 +99,6 @@ namespace Geometry.HilbertAxioms2D
     . intro h
       let l' := mk_line hne
       rw [show (mk_line hne).val = l'.val by rfl] at h
-      rw [collinear_def]
       use l'.val
       simp only [l'.property, h, and_self]
 
@@ -157,17 +122,13 @@ namespace Geometry.HilbertAxioms2D
     have hfe: f ≠ e := by
       apply Ne.symm
       have h := G.between_ne hf1
-      rw [List.pairwise_iff_getElem] at h
-      specialize h 1 2 (by norm_num) (by norm_num) (by decide)
-      simp only [List.getElem_cons_zero, List.getElem_cons_succ] at h
-      exact h
+      apply h.select' 1 2
+      all_goals norm_num
 
     have haf: a ≠ f := by
       have h := G.between_ne hf1
-      rw [List.pairwise_iff_getElem] at h
-      specialize h 0 2 (by norm_num) (by norm_num) (by decide)
-      simp only [List.getElem_cons_zero, List.getElem_cons_succ] at h
-      exact h
+      apply h.select' 0 2
+      all_goals norm_num
 
     -- F必不等于C，否则F和E都将处在直线AC上
     have hfc: f ≠ c := by
@@ -187,15 +148,12 @@ namespace Geometry.HilbertAxioms2D
 
     have hg2: f ≠ g := by
       have h := G.between_ne hg1
-      rw [List.pairwise_iff_getElem] at h
-      specialize h 0 2 (by norm_num) (by norm_num) (by decide)
-      simp only [List.getElem_cons_zero, List.getElem_cons_succ] at h
-      exact h
+      apply h.select' 0 2
+      all_goals norm_num
 
     have hg3: e ≠ g := by
       have t1 := G.collinear_of_between hf1
       have t2 := G.collinear_of_between hg1
-      rw [collinear_def] at t1 t2
       -- 直线AEF
       let ⟨l3, ha, he, hf1⟩ := t1
       -- 直线FCG
@@ -238,7 +196,6 @@ namespace Geometry.HilbertAxioms2D
     have t1 : ¬ Collinear a f c := by
       intro h
       have t1 := G.collinear_of_between hf1
-      rw [collinear_def] at t1 h
       -- 直线AEF
       let ⟨l3, ha, he, hf2⟩ := t1
       -- 虚构的矛盾直线ACF
@@ -246,10 +203,9 @@ namespace Geometry.HilbertAxioms2D
 
       have hf3 : f ≠ a := by
         have hf1 := G.between_ne hf1
-        rw [List.pairwise_iff_getElem] at hf1
-        specialize hf1 0 2 (by norm_num) (by norm_num) (by decide)
-        simp only [List.getElem_cons_zero, List.getElem_cons_succ] at hf1
-        apply Ne.symm hf1
+        apply Ne.symm
+        apply hf1.select' 0 2
+        all_goals norm_num
 
       apply he1
       -- l3、l4共点a、f，所以相等
@@ -280,20 +236,18 @@ namespace Geometry.HilbertAxioms2D
       rw [t3]
       exact he
 
-    have t2 : ∃ P: Point, OnSegment a P f ∧ P ∈ l2 := by
+    have t2 : ∃ P: Point, Between a P f ∧ P ∈ l2 := by
       use e
       and_intros
-      . rw [OnSegment_def]
-        apply Or.inl
-        exact hf1
+      . exact hf1
       . exact hl2.1
 
-    have ⟨b, hb1, hb2⟩  := G.pasch_axiom t1 t2
+    have ⟨b, hb1, hb2⟩  := G.pasch_axiom t1 (sorry) (sorry) (sorry) t2
 
     have hFinal: Between a b c  := by
-      have t3: ¬ OnSegment f b c := by
-        intro H_onseg
-        have hb_col : Collinear f b c := collinear_of_onsegment H_onseg
+      have t3: ¬ Between f b c := by
+        intro H_fbc
+        have hb_col : Collinear f b c := collinear_of_between H_fbc
         have hg_col : Collinear f c g := collinear_of_between hg1
         have hb_in_lfc : b ∈ (mk_line hfc).val := by
           rw [← in_mk_line_iff_collinear]
@@ -305,7 +259,7 @@ namespace Geometry.HilbertAxioms2D
 
         have hbg: b ≠ g := by
           intro eq
-          have := not_between_of_onsegment_symm H_onseg
+          have := between_not_symm_right H_fbc
           rw [eq] at this
           exact this hg1
 
@@ -324,7 +278,6 @@ namespace Geometry.HilbertAxioms2D
           apply collinear_of_between hf1
 
         have : Collinear a f c := by
-          rw [collinear_def]
           let l:= mk_line hfe
           use l.val
           and_intros
@@ -340,122 +293,133 @@ namespace Geometry.HilbertAxioms2D
 
         exact t1 this
 
-      have t4: b ≠ a := by
-        intro he
-        -- 如果b=a，那么e=a，矛盾
-        have : e = a := by
-          let l3 := mk_line hae
-          have: l2 ≠ l3 := by
-            have hl3: a ∈ l3.val := l3.property.1
-            have hg_l2: g ∈ l2 := hl2.2
+      -- have t4: b ≠ a := by
+      --   intro he
+      --   -- 如果b=a，那么e=a，矛盾
+      --   have : e = a := by
+      --     let l3 := mk_line hae
+      --     have: l2 ≠ l3 := by
+      --       have hl3: a ∈ l3.val := l3.property.1
+      --       have hg_l2: g ∈ l2 := hl2.2
 
-            intro h_eq
-            have hg_l3: g ∈ l3.val := by rw [h_eq] at hg_l2; exact hg_l2
+      --       intro h_eq
+      --       have hg_l3: g ∈ l3.val := by rw [h_eq] at hg_l2; exact hg_l2
 
-            have h_col : Collinear a e g := by
-              apply collinear_comm_right
-              rw [in_mk_line_iff_collinear hae]
-              exact hg_l3
+      --       have h_col : Collinear a e g := by
+      --         apply collinear_comm_right
+      --         rw [in_mk_line_iff_collinear hae]
+      --         exact hg_l3
 
-            -- 目标推导afc共线
-            -- aeg、aef共线推出afg共线
-            have h_afg : Collinear a f g := by
-              apply collinear_comp hae
-              . apply collinear_of_between
-                exact hf1
-              . exact h_col
+      --       -- 目标推导afc共线
+      --       -- aeg、aef共线推出afg共线
+      --       have h_afg : Collinear a f g := by
+      --         apply collinear_comp hae
+      --         . apply collinear_of_between
+      --           exact hf1
+      --         . exact h_col
 
-            -- fga、fgc共线推出afc共线
-            have h_afc : Collinear f a c := by
-              apply collinear_comp hg2
-              . apply collinear_comm_rotate
-                exact h_afg
-              . apply collinear_comm_right
-                apply collinear_of_between
-                exact hg1
+      --       -- fga、fgc共线推出afc共线
+      --       have h_afc : Collinear f a c := by
+      --         apply collinear_comp hg2
+      --         . apply collinear_comm_rotate
+      --           exact h_afg
+      --         . apply collinear_comm_right
+      --           apply collinear_of_between
+      --           exact hg1
 
-            apply t1
-            apply collinear_comm_left
-            exact h_afc
+      --       apply t1
+      --       apply collinear_comm_left
+      --       exact h_afc
 
-          apply common_point_of_lines this
-          . exact hl2.1
-          . exact l3.property.2
-          . rw [← he]
-            exact hb2
-          . exact l3.property.1
+      --     apply common_point_of_lines this
+      --     . exact hl2.1
+      --     . exact l3.property.2
+      --     . rw [← he]
+      --       exact hb2
+      --     . exact l3.property.1
 
-        apply hae
-        rw [this]
+      --   apply hae
+      --   rw [this]
 
-      have t5: b ≠ c := by
-        -- 可以直接从t1推出
-        simp only [OnSegment_def, not_or] at t3
-        exact t3.2.2
-      simp only [t3, t4, t5, OnSegment_def, false_or, or_false] at hb1
+      simp only [t3, false_or, or_false] at hb1
       exact hb1
 
     ⟨b, hFinal⟩
 
 
-  theorem onSameSide.not_liesOn(l: G.Line)(a b: Point):
-      G.SameSideOfLine l a b → ¬ a ∈ l ∧ ¬ b ∈ l :=
-  by
-    sorry
+  section
+    variable {Point: Type}[G: HilbertAxioms2D Point]
 
-  theorem onOtherSide.not_liesOn(l: G.Line)(a b: Point):
-      OtherSideOfLine l a b → ¬ a ∈ l ∧ ¬ b ∈  l :=
-  by
-    sorry
+    /-- two point is on same side of a line. -/
+    def SameSideOfLine(l: G.Line)(a b: Point): Prop :=
+      ¬ a ∈ l ∧ ¬ b ∈ l ∧ ¬(∃ c: Point, G.Between a c b ∧ c ∈ l)
 
-  theorem onSameSide.not_onOtherSide(l: G.Line)(a b: Point):
-      SameSideOfLine l a b → ¬ OtherSideOfLine l a b :=
-  by
-    sorry
+    /-- two point is on different side of a line. -/
+    def OtherSideOfLine(l: G.Line)(a b: Point): Prop :=
+      ¬ a ∈ l ∧ ¬ b ∈ l ∧ ∃ c: Point, G.Between a c b ∧ c ∈ l
 
-  theorem onOtherSide.not_onSameSide(l: G.Line)(a b: Point):
-      OtherSideOfLine l a b → ¬ SameSideOfLine l a b :=
-  by
-    sorry
 
-  theorem onSameSide.not (l: G.Line)(a b: Point):
-      ¬ SameSideOfLine l a b → a ∈ l ∨ b ∈ l ∨ OtherSideOfLine l a b:=
-  by
-    sorry
 
-  theorem onOtherSide.not (l: G.Line)(a b: Point):
-      ¬ OtherSideOfLine l a b → a ∈ l ∨ b ∈ l ∨ SameSideOfLine l a b :=
-  by
-    sorry
 
-  theorem onSameSide.reflex (l: G.Line)(a: Point):
-      SameSideOfLine l a a :=
-  by
-    sorry
+    theorem onSameSide.not_liesOn(l: G.Line)(a b: Point):
+        G.SameSideOfLine l a b → ¬ a ∈ l ∧ ¬ b ∈ l :=
+    by
+      sorry
 
-  theorem onOtherSide.not_reflex(l: G.Line)(a: Point):
-      ¬ OtherSideOfLine l a a :=
-  by
-    sorry
+    theorem onOtherSide.not_liesOn(l: G.Line)(a b: Point):
+        OtherSideOfLine l a b → ¬ a ∈ l ∧ ¬ b ∈  l :=
+    by
+      sorry
 
-  theorem onSameSide.symm(l: G.Line)(a b: Point):
-      SameSideOfLine l a b → SameSideOfLine l b a :=
-  by
-    sorry
+    theorem onSameSide.not_onOtherSide(l: G.Line)(a b: Point):
+        SameSideOfLine l a b → ¬ OtherSideOfLine l a b :=
+    by
+      sorry
 
-  theorem onOtherSide.symm(l: G.Line)(a b: Point):
-      OtherSideOfLine l a b → OtherSideOfLine l b a :=
-  by
-    sorry
+    theorem onOtherSide.not_onSameSide(l: G.Line)(a b: Point):
+        OtherSideOfLine l a b → ¬ SameSideOfLine l a b :=
+    by
+      sorry
 
-  theorem onSameSide.trans(l: G.Line)(a b c: Point):
-      SameSideOfLine l a b → SameSideOfLine l b c → SameSideOfLine l a c :=
-  by
-    sorry
+    theorem onSameSide.not (l: G.Line)(a b: Point):
+        ¬ SameSideOfLine l a b → a ∈ l ∨ b ∈ l ∨ OtherSideOfLine l a b:=
+    by
+      sorry
 
-  theorem onOtherSide.trans(a b c: Point)(h: a ≠ b)(l: G.Line):
-      OtherSideOfLine l a b → OtherSideOfLine l b c → SameSideOfLine l a c :=
-  by
-    sorry
+    theorem onOtherSide.not (l: G.Line)(a b: Point):
+        ¬ OtherSideOfLine l a b → a ∈ l ∨ b ∈ l ∨ SameSideOfLine l a b :=
+    by
+      sorry
 
+    theorem onSameSide.reflex (l: G.Line)(a: Point):
+        SameSideOfLine l a a :=
+    by
+      sorry
+
+    theorem onOtherSide.not_reflex(l: G.Line)(a: Point):
+        ¬ OtherSideOfLine l a a :=
+    by
+      sorry
+
+    theorem onSameSide.symm(l: G.Line)(a b: Point):
+        SameSideOfLine l a b → SameSideOfLine l b a :=
+    by
+      sorry
+
+    theorem onOtherSide.symm(l: G.Line)(a b: Point):
+        OtherSideOfLine l a b → OtherSideOfLine l b a :=
+    by
+      sorry
+
+    theorem onSameSide.trans(l: G.Line)(a b c: Point):
+        SameSideOfLine l a b → SameSideOfLine l b c → SameSideOfLine l a c :=
+    by
+      sorry
+
+    theorem onOtherSide.trans(a b c: Point)(h: a ≠ b)(l: G.Line):
+        OtherSideOfLine l a b → OtherSideOfLine l b c → SameSideOfLine l a c :=
+    by
+      sorry
+
+  end
 end Geometry.HilbertAxioms2D
