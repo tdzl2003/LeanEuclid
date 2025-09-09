@@ -11,13 +11,13 @@ namespace Geometry.Euclid2D
   axiom Between(a b c: Point): Prop
 
   /-- Between relation is exclusive. -/
-  axiom between_ne(a b c: Point): Between a b c → a ≠ b ∧ b ≠ c
+  axiom between_ne{a b c: Point}: Between a b c → [a, b, c].Pairwise (· ≠ ·)
 
   /-- axiom II.1: If A, B, C are points of a straight line and B lies Between A and C, then B lies also Between C and A.-/
-  axiom between_symm(a b c: Point): Between a b c → Between c b a
+  axiom between_symm{a b c: Point}: Between a b c → Between c b a
 
   /-- axiom II.2.2 If A and C are two points of a straight line, at least one point D so situated that C lies Between A and D.-/
-  axiom extension_exists(a c: Point): a ≠ c → {d: Point // Between a c d}
+  axiom extension_exists{a c: Point}: a ≠ c → {d: Point // Between a c d}
 
   /-- LiesOn: a is on the l -/
   private axiom LiesOn(l: Line)(a: Point): Prop
@@ -26,10 +26,10 @@ namespace Geometry.Euclid2D
     mem := LiesOn
 
   /-- axiom I.1: Two distinct points A and B always completely determine a straight line a. --/
-  axiom mk_line(a b: Point)(hne: a ≠ b): {l: Line // a ∈ l ∧ b ∈ l}
+  axiom mk_line{a b: Point}(hne: a ≠ b): {l: Line // a ∈ l ∧ b ∈ l}
 
   /-- axiom I.2: Any two distinct points of a straight line completely determine that line; that is, if AB = a and AC = a, where B ̸= C, then is also BC = a. -/
-  axiom unique_line_from_two_points (a b: Point) (l: Line)(h:  a ≠ b) : a ∈ l → b ∈ l → l = mk_line a b h
+  axiom unique_line_from_two_points{a b: Point}{l: Line}(h:  a ≠ b) : a ∈ l → b ∈ l → l = mk_line h
 
   /-- axiom I.7.1: Upon every straight line there exist at least two points -/
   axiom line_exists_two_points(l: Line): {s: Point × Point // s.1 ≠ s.2 ∧ s.1 ∈ l ∧ s.2 ∈ l}
@@ -41,16 +41,28 @@ namespace Geometry.Euclid2D
 
   def OnSegment(a b c: Point): Prop := Between a b c ∨ b = a ∨ b = c
 
-  axiom collinear_of_between(a b c: Point): Between a b c → Collinear a b c
+  axiom collinear_of_between{a b c: Point}: Between a b c → Collinear a b c
 
-  axiom pasch_axiom {A B C: Point}(h: ¬Collinear A B C)(l: Line):
+  axiom pasch_axiom {A B C: Point}{l: Line}(h: ¬Collinear A B C):
     (∃ P: Point, OnSegment A P B ∧ P ∈ l) →
      {Q: Point // (OnSegment B Q C ∨  OnSegment A Q C) ∧ Q ∈ l}
 
+  private axiom instDecidableEq : DecidableEq Point
+
+  noncomputable instance: DecidableEq Point := instDecidableEq
+
+  private axiom instDecidableMemLine:  (l: Line)→(p: Point) → Decidable (p ∈ l)
+
+  noncomputable instance (l: Line)(p: Point): Decidable (p ∈ l) := instDecidableMemLine l p
+
+  axiom mk_line_intersection{l1 l2: Line}(hne: l1 ≠ l2)(he: ∃ p, p∈l1 ∧ p ∈ l2) : {p: Point // p ∈ l1 ∧ p ∈ l2}
+
 
   noncomputable instance: HilbertAxioms2D Point where
+    instDecidableEq := by infer_instance
     Line := Line
-    mem_Line := by infer_instance
+    instMemLine := by infer_instance
+    instDecidableMemLine := by infer_instance
 
     Between := Between
     between_ne := between_ne
@@ -58,15 +70,16 @@ namespace Geometry.Euclid2D
     extension_exists := extension_exists
 
     mk_line := mk_line
+    mk_line_intersection := mk_line_intersection
     unique_line_from_two_points := unique_line_from_two_points
     line_exists_two_points := line_exists_two_points
     collinear_of_between := collinear_of_between
     exists_three_noncollinear_points := exists_three_noncollinear_points
 
     pasch_axiom:=pasch_axiom
-    collinear_def(a b c):= by
+    collinear_def{a b c}:= by
       simp only [Collinear]
-    OnSegment_def(a b c) := by
+    OnSegment_def{a b c} := by
       simp only [OnSegment]
 
   section
@@ -96,7 +109,7 @@ namespace Geometry.Euclid2D
       )
     axiom not_exists_inside_line: ∀ (poly: Polygon), ¬ ∃ l:Line, ∀ p ∈ l, inside poly p
 
-    theorem exists_outside_line: ∀ (poly: Polygon), ∃ l:Line, ∀ p ∈ l, outside poly p := by
+    theorem exists_outside_line: ∀ (poly: Polygon), poly.isSimple → ∃ l:Line, ∀ p ∈ l, outside poly p := by
       sorry
 
     noncomputable instance {poly: Polygon}{hSimple: poly.isSimple}: HilbertAxioms2D.PolygonalRegion poly hSimple where
@@ -108,7 +121,7 @@ namespace Geometry.Euclid2D
       outside_path_connected := outside_path_connected poly
       crossing_edge := crossing_edge poly
       not_exists_inside_line := not_exists_inside_line poly
-      exists_outside_line:= exists_outside_line poly
+      exists_outside_line:= exists_outside_line poly hSimple
   end
 
 end Geometry.Euclid2D

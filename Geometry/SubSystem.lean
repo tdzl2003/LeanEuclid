@@ -102,7 +102,9 @@ namespace Geometry.HilbertAxioms2D
         exact h
 
       between_not_symm_right := by
-        sorry
+        intro a b c h
+        apply between_not_symm_right
+        exact h
 
       between_exists{a' c'}(hne') :=
         let ⟨a, ha⟩ := a'

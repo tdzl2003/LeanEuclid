@@ -1,5 +1,6 @@
 import Geometry.Basic
 import Geometry.Segment
+import Mathlib.Tactic.Linarith
 
 namespace Geometry
   structure BrokenLine(Point: Type)[Membership Point (Segment Point)] where
@@ -15,11 +16,21 @@ namespace Geometry
     let v2 := poly.vertices.get ⟨(i + 1), by omega⟩
     { p1 := v1, p2 := v2 }
 
+  def BrokenLine.vertices_not_empty(poly: BrokenLine Point):
+    poly.vertices ≠ [] :=
+  by
+    intro he
+    have h1: poly.vertices.length = 0  := by
+      rw [he]
+      simp only [List.length_nil]
+    have h2:= poly.hc
+    linarith
+
   def BrokenLine.head (poly: BrokenLine Point): Point :=
-    poly.vertices.head (by sorry)
+    poly.vertices.head poly.vertices_not_empty
 
   def BrokenLine.last (poly: BrokenLine Point): Point :=
-    poly.vertices.getLast (by sorry)
+    poly.vertices.getLast poly.vertices_not_empty
 
   instance : Membership Point (BrokenLine Point) where
     mem(bl: BrokenLine Point)(p: Point) := ∃ i, p ∈ bl.edgeAt i
