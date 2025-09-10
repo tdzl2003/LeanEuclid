@@ -11,7 +11,7 @@ namespace Geometry.Euclid2D
   axiom Between(a b c: Point): Prop
 
   /-- Between relation is exclusive. -/
-  axiom between_ne{a b c: Point}: Between a b c → [a, b, c].Pairwise (· ≠ ·)
+  axiom between_ne{a b c: Point}: Between a b c → [a, b, c].Distinct
 
   /-- axiom II.1: If A, B, C are points of a straight line and B lies Between A and C, then B lies also Between C and A.-/
   axiom between_symm{a b c: Point}: Between a b c → Between c b a
@@ -37,7 +37,7 @@ namespace Geometry.Euclid2D
   def Collinear (a b c : Point) : Prop := ∃ l : Line, a ∈ l ∧ b ∈ l ∧ c ∈ l
 
   /-- axiom I.7.2: in every plane at least three points not lying in the same straight line,-/
-  axiom exists_three_noncollinear_points: {s: Point × Point × Point // [s.1, s.2.1, s.2.2].Pairwise (· ≠ ·) ∧ ¬Collinear s.1 s.2.1 s.2.2}
+  axiom exists_three_noncollinear_points: {s: Point × Point × Point // [s.1, s.2.1, s.2.2].Distinct ∧ ¬Collinear s.1 s.2.1 s.2.2}
 
   axiom collinear_of_between{a b c: Point}: Between a b c → Collinear a b c
 

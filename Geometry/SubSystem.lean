@@ -20,11 +20,8 @@ namespace Geometry.HilbertAxioms1D
       have h' := h1.between_ne h
       rw [show [e a, e b, e c] = ([a, b, c].map (fun v ↦ e v)) by simp only [List.map_cons,
         List.map_nil]] at h'
-      unfold List.Distinct at h'
-      rw [List.pairwise_map] at h'
-      apply List.Pairwise.imp _ h'
-      intro a b
-      simp only [ne_eq, EmbeddingLike.apply_eq_iff_eq, imp_self]
+      apply h'.map' e
+      simp only [ne_eq, EmbeddingLike.apply_eq_iff_eq, imp_self, implies_true]
     between_symm := by
       intro a b c h
       apply h1.between_symm

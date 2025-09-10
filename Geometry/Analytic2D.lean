@@ -19,7 +19,7 @@ namespace Geometry.Analytic2D
 
   /-- Between relation is exclusive. -/
   theorem between_ne{a b c: Point}:
-    Between a b c → [a, b, c].Pairwise (· ≠ ·) :=
+    Between a b c → [a, b, c].Distinct :=
   by
     sorry
 
@@ -125,7 +125,7 @@ namespace Geometry.Analytic2D
     sorry
 
   def exists_three_noncollinear_points:
-      {s: Point × Point × Point // [s.1, s.2.1, s.2.2].Pairwise (· ≠ ·) ∧ ¬Collinear s.1 s.2.1 s.2.2} :=
+      {s: Point × Point × Point // [s.1, s.2.1, s.2.2].Distinct ∧ ¬Collinear s.1 s.2.1 s.2.2} :=
     sorry
 
   def mk_line_intersection{l1 l2: Line}(hne: l1 ≠ l2)(he: ∃ p, p∈l1 ∧ p ∈ l2) : {p: Point // p ∈ l1 ∧ p ∈ l2} :=

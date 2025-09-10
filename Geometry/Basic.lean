@@ -30,6 +30,30 @@ namespace List
     rw [ne_eq, Fin.eq_mk_iff_val_eq]
     exact hne
 
+  theorem Distinct.map {l: List α}
+    (f: α → β)(h: ∀ a b: α, a ≠ b → f a ≠ f b):
+    l.Distinct → (l.map f).Distinct :=
+  by
+    unfold List.Distinct
+    rw [pairwise_map]
+    intro h1
+    rw [pairwise_iff_getElem] at h1 ⊢
+    intro i j hi hj hij
+    apply h
+    exact h1 i j hi hj hij
+
+  theorem Distinct.map' {l: List α}
+    (f: α → β)(h: ∀ a b: α, f a ≠ f b → a ≠ b):
+    (l.map f).Distinct → l.Distinct :=
+  by
+    unfold List.Distinct
+    rw [pairwise_map]
+    intro h1
+    rw [pairwise_iff_getElem] at h1 ⊢
+    intro i j hi hj hij
+    apply h
+    exact h1 i j hi hj hij
+
 end List
 
 namespace Geometry
