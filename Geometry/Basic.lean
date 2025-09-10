@@ -74,6 +74,38 @@ namespace Geometry
     -/
     between_symm{a b c: Point}: Between a b c → Between c b a
 
+    /--
+      axiom II.2.2 If A and C are two points of a straight line, there exists at least one point D so situated that C lies Between A and D.
+      Additional constraints: D ≠ A
+    -/
+    extension_exists{a c: Point}: a ≠ c → {d: Point // Between a c d}
+
+  -- collection of axioms which can be proved in 2D or above
+  class BetweenRelS (Point: Type) extends BetweenRel Point where
+    /--
+      This can be proved in 2D but is axiom for 1D.
+    -/
+    between_not_symm_right{a b c : Point}: Between a b c → ¬ Between a c b
+
+    /--
+      axiom II.2.1 If A and C are two points of a straight line, there exists at least one point B lying between A and C.
+      This can be proved in 2D but is axiom for 1D.
+    -/
+    between_exists{a c: Point}: a ≠ c → {b: Point // Between a b c}
+
+    /--
+      If B is between A and C, and C is between B and D, then B is also between A and C, and C is also between A and D.
+    -/
+    between_trans {A B C D : Point} :
+      Between A B C → Between B C D → Between A B D ∧ Between A C D
+
+    /--
+      If B is between A and C, and C is between A and D, then B is also between A and D, and C is also between B and D.
+    -/
+    between_trans' {A B C D : Point} :
+      Between A B C → Between A C D → Between A B D ∧ Between B C D
+
+
   structure Segment(Point: Type) where
     p1: Point
     p2: Point
@@ -89,6 +121,40 @@ namespace Geometry
   instance {Point: Type}[G: BetweenRel Point]: Membership Point (Segment Point) where
       mem (s: Segment Point) (p: Point) : Prop := G.Between s.p1 p s.p2
 
+  structure RayRaw(Point: Type)[G: BetweenRel Point] where
+    start: Point
+    p: Point
+
+  namespace RayRaw
+    def Equiv {Point}[G: BetweenRel Point](l₁ l₂: RayRaw Point): Prop
+      := l₁.start = l₂.start ∧ (
+        l₁.p = l₂.p ∨
+        G.Between l₁.start l₁.p l₂.p ∨
+        G.Between l₁.start l₂.p l₁.p
+      )
+
+    theorem equiv_refl{Point}[G: BetweenRel Point](l: RayRaw Point): Equiv l l :=
+    by
+      sorry
+
+    theorem equiv_symm{Point}[G: BetweenRel Point]{l₁ l₂: RayRaw Point}
+      (h : Equiv l₁ l₂) : Equiv l₂ l₁ :=
+    by
+      sorry
+
+    theorem equiv_trans{Point}[G: BetweenRel Point]{l₁ l₂ l₃: RayRaw Point}
+      (h₁ : Equiv l₁ l₂) (h₂ : Equiv l₂ l₃)
+      : Equiv l₁ l₃ :=
+    by
+      sorry
+
+    instance setoid(Point)[G: BetweenRel Point] : Setoid (RayRaw Point) where
+      r := Equiv
+      iseqv := ⟨equiv_refl, equiv_symm, equiv_trans⟩
+  end RayRaw
+
+  def Ray{Point}[G: BetweenRel Point] := Quotient (RayRaw.setoid Point)
+
   namespace HilbertAxioms1D
     -- 1D definition
     class Defs (Point: Type) where
@@ -100,23 +166,7 @@ namespace Geometry
       /-- axiom I.8: There exist at least two points on a line. -/
       line_exists_two_points: {s: Point × Point // s.1 ≠ s.2}
 
-    class Orders (Point: Type) extends BetweenRel Point where
-      /--
-        This can be proved in 2D but is axiom for 1D.
-      -/
-      between_not_symm_right{a b c : Point}: Between a b c → ¬ Between a c b
-
-      /--
-        axiom II.2.1 If A and C are two points of a straight line, there exists at least one point B lying between A and C.
-        This can be proved in 2D but is axiom for 1D.
-      -/
-      between_exists{a c: Point}: a ≠ c → {b: Point // Between a b c}
-
-      /--
-        axiom II.2.2 If A and C are two points of a straight line, there exists at least one point D so situated that C lies Between A and D.
-        Additional constraints: D ≠ A
-      -/
-      extension_exists{a c: Point}: a ≠ c → {d: Point // Between a c d}
+    class Orders (Point: Type) extends BetweenRel Point, BetweenRelS Point
 
   end HilbertAxioms1D
 
@@ -163,13 +213,6 @@ namespace Geometry
         ∧ ¬ Collinear s.1 s.2.1 s.2.2}
 
     class Orders(Point: Type) extends Connections Point, BetweenRel Point where
-      /--
-        axiom II.2.2 If A and C are two points of a straight line, there exists at least one point D so situated that C lies Between A and D.
-        Additional constraints: D ≠ A, which is required to prove between_exists
-        TODO: can we remove this constraint and prove one D' ≠ A exists? Maybe it's a circular argument
-      -/
-      extension_exists{a c: Point}: a ≠ c → {d: Point // Between a c d}
-
       /-- If B is between A and C, then A, B, C are collinear. -/
       collinear_of_between{a b c: Point}: Between a b c → Collinear a b c
 
@@ -258,12 +301,6 @@ namespace Geometry
         {s: Point × Point × Point × Point //  [s.1, s.2.1, s.2.2.1, s.2.2.2].Distinct ∧ ¬(∃ pl: Plane, s.1 ∈ pl ∧ s.2.1 ∈ pl ∧ s.2.2.1 ∈ pl ∧ s.2.2.2 ∈ pl)}
 
     class Orders(Point: Type) extends Connections Point, BetweenRel Point where
-      /--
-        axiom II.2.2 If A and C are two points of a straight line, there exists at least one point D so situated that C lies Between A and D.
-        Additional constraints: D ≠ A,
-      -/
-      extension_exists{a c: Point}: a ≠ c → {d: Point // Between a c d}
-
       /-- If B is between A and C, then A, B, C are collinear. -/
       collinear_of_between{a b c: Point}: Between a b c → Collinear a b c
 

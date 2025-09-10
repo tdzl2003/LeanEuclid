@@ -17,18 +17,23 @@ namespace Geometry.HilbertAxioms1D
       ¬(G.Between a b c ∧ G.Between a c b) ∧
       ¬(G.Between b a c ∧ G.Between a c b) := by
     sorry
+end Geometry.HilbertAxioms1D
+
+
+namespace Geometry.HilbertAxioms2D
+  variable {Point: Type}[G: HilbertAxioms2D Point]
 
   /--
-    If B is between A and C, and C is between B and D, then B is also between A and D, and C is also between A and D.
+    If B is between A and C, and C is between B and D, then B is also between A and C, and C is also between A and D.
   -/
-  theorem between_transitivity {A B C D : Point} :
+  theorem between_trans {A B C D : Point} :
       G.Between A B C → G.Between B C D → G.Between A B D ∧ G.Between A C D := by
     sorry
 
   /--
     If B is between A and C, and C is between A and D, then B is also between A and D, and C is also between B and D.
   -/
-  theorem between_transitivity' {A B C D : Point} :
+  theorem between_trans' {A B C D : Point} :
       G.Between A B C → G.Between A C D → G.Between A B D ∧ G.Between B C D := by
     sorry
 
@@ -76,7 +81,7 @@ namespace Geometry.HilbertAxioms1D
   by
     sorry
 
-end Geometry.HilbertAxioms1D
+end Geometry.HilbertAxioms2D
 
 namespace Geometry.HilbertAxioms2D
   variable {Point: Type}[G: HilbertAxioms2D Point]
@@ -458,3 +463,11 @@ namespace Geometry.HilbertAxioms2D
 
   end
 end Geometry.HilbertAxioms2D
+
+namespace Geometry
+  instance {Point}[G: HilbertAxioms2D Point]: BetweenRelS Point where
+    between_not_symm_right := G.between_not_symm_right
+    between_exists := G.between_exists
+    between_trans := G.between_trans
+    between_trans' := G.between_trans'
+end Geometry
