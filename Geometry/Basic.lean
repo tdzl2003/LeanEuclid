@@ -57,6 +57,23 @@ namespace List
 end List
 
 namespace Geometry
+
+end Geometry
+
+namespace Geometry
+
+  class BetweenRel (Point: Type) where
+    /-- Between : b is Between a and c (exclusive) -/
+    Between(a b c: Point): Prop
+
+    /-- Between relation is exclusive. -/
+    between_ne{a b c: Point}: Between a b c → [a,b,c].Distinct
+
+    /--
+      axiom II.1: If A, B, C are points of a straight line and B lies Between A and C, then B lies also Between C and A.
+    -/
+    between_symm{a b c: Point}: Between a b c → Between c b a
+
   structure Segment(Point: Type) where
     p1: Point
     p2: Point
@@ -64,15 +81,13 @@ namespace Geometry
   def Segment.valid {Point: Type}(s: Segment Point): Prop :=
     s.p1 ≠ s.p2
 
-
   def IsSubset{Point: Type}{α: Type}{β: Type}[Membership Point α][Membership Point β](S: α)(T: β): Prop :=
       ∀ p: Point, p ∈ S → p ∈ T
 
   scoped infix:99 "⊆" => IsSubset
 
-end Geometry
-
-namespace Geometry
+  instance {Point: Type}[G: BetweenRel Point]: Membership Point (Segment Point) where
+      mem (s: Segment Point) (p: Point) : Prop := G.Between s.p1 p s.p2
 
   namespace HilbertAxioms1D
     -- 1D definition
@@ -85,18 +100,7 @@ namespace Geometry
       /-- axiom I.8: There exist at least two points on a line. -/
       line_exists_two_points: {s: Point × Point // s.1 ≠ s.2}
 
-    class Orders (Point: Type) where
-      /-- Between : b is Between a and c (exclusive) -/
-      Between(a b c: Point): Prop
-
-      /-- Between relation is exclusive. -/
-      between_ne{a b c: Point}: Between a b c → [a,b,c].Distinct
-
-      /--
-        axiom II.1: If A, B, C are points of a straight line and B lies Between A and C, then B lies also Between C and A.
-      -/
-      between_symm{a b c: Point}: Between a b c → Between c b a
-
+    class Orders (Point: Type) extends BetweenRel Point where
       /--
         This can be proved in 2D but is axiom for 1D.
       -/
@@ -113,10 +117,6 @@ namespace Geometry
         Additional constraints: D ≠ A
       -/
       extension_exists{a c: Point}: a ≠ c → {d: Point // Between a c d}
-
-
-    instance {Point: Type}[G: Orders Point]: Membership Point (Segment Point) where
-      mem (s: Segment Point) (p: Point) : Prop := G.Between s.p1 p s.p2
 
   end HilbertAxioms1D
 
@@ -162,18 +162,7 @@ namespace Geometry
         [s.1, s.2.1, s.2.2].Distinct
         ∧ ¬ Collinear s.1 s.2.1 s.2.2}
 
-    class Orders(Point: Type) extends Connections Point where
-      /-- Between : b is Between a and c (exclusive) -/
-      Between(a b c: Point): Prop
-
-      /-- Between relation is exclusive. -/
-      between_ne{a b c: Point}: Between a b c → [a, b, c].Distinct
-
-      /--
-        axiom II.1: If A, B, C are points of a straight line and B lies Between A and C, then B lies also Between C and A.
-      -/
-      between_symm{a b c: Point}: Between a b c → Between c b a
-
+    class Orders(Point: Type) extends Connections Point, BetweenRel Point where
       /--
         axiom II.2.2 If A and C are two points of a straight line, there exists at least one point D so situated that C lies Between A and D.
         Additional constraints: D ≠ A, which is required to prove between_exists
@@ -193,8 +182,6 @@ namespace Geometry
         (h2: ∃ P: Point, Between A P B ∧ P ∈ l):
           {Q: Point // (Between B Q C ∨ Between A Q C) ∧ Q ∈ l}
 
-    instance {Point: Type}[G: Orders Point]: Membership Point (Segment Point) where
-        mem (s: Segment Point) (p: Point) : Prop := G.Between s.p1 p s.p2
 
   end HilbertAxioms2D
 
@@ -270,18 +257,7 @@ namespace Geometry
       space_exists_four_noncoplanar_points:
         {s: Point × Point × Point × Point //  [s.1, s.2.1, s.2.2.1, s.2.2.2].Distinct ∧ ¬(∃ pl: Plane, s.1 ∈ pl ∧ s.2.1 ∈ pl ∧ s.2.2.1 ∈ pl ∧ s.2.2.2 ∈ pl)}
 
-    class Orders(Point: Type) extends Connections Point where
-      /-- Between : b is Between a and c (exclusive) -/
-      Between(a b c: Point): Prop
-
-      /-- Between relation is exclusive. -/
-      between_ne{a b c: Point}: Between a b c → [a,b,c].Distinct
-
-      /--
-        axiom II.1: If A, B, C are points of a straight line and B lies Between A and C, then B lies also Between C and A.
-      -/
-      between_symm{a b c: Point}: Between a b c → Between c b a
-
+    class Orders(Point: Type) extends Connections Point, BetweenRel Point where
       /--
         axiom II.2.2 If A and C are two points of a straight line, there exists at least one point D so situated that C lies Between A and D.
         Additional constraints: D ≠ A,
@@ -302,8 +278,6 @@ namespace Geometry
         (h3: ∃ P: Point, Between A P B ∧ P ∈ l) :
           {Q: Point // (Between B Q C ∨ Between A Q C) ∧ Q ∈ l}
 
-    instance {Point: Type}[G: Orders Point]: Membership Point (Segment Point) where
-        mem (s: Segment Point) (p: Point) : Prop := G.Between s.p1 p s.p2
   end HilbertAxioms3D
 
 
@@ -311,7 +285,5 @@ namespace Geometry
     HilbertAxioms3D.Defs Point,
     HilbertAxioms3D.Connections Point,
     HilbertAxioms3D.Orders Point
-
-
 
 end Geometry

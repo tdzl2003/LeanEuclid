@@ -81,7 +81,7 @@ end Geometry.HilbertAxioms1D
 namespace Geometry.HilbertAxioms2D
   variable {Point: Type}[G: HilbertAxioms2D Point]
 
-  theorem between_not_symm_right{a b c : Point}: Between a b c → ¬ Between a c b := by
+  theorem between_not_symm_right{a b c : Point}: G.Between a b c → ¬ G.Between a c b := by
     sorry
 
   theorem in_mk_line_iff_collinear{a b c : Point}(hne: a ≠ c):
@@ -236,7 +236,7 @@ namespace Geometry.HilbertAxioms2D
       rw [t3]
       exact he
 
-    have t2 : ∃ P: Point, Between a P f ∧ P ∈ l2 := by
+    have t2 : ∃ P: Point, G.Between a P f ∧ P ∈ l2 := by
       use e
       and_intros
       . exact hf1
@@ -327,8 +327,8 @@ namespace Geometry.HilbertAxioms2D
 
     have ⟨b, hb1, hb2⟩  := G.pasch_axiom t1 hal2 hfl2 hcl2 t2
 
-    have hFinal: Between a b c  := by
-      have t3: ¬ Between f b c := by
+    have hFinal: G.Between a b c  := by
+      have t3: ¬ G.Between f b c := by
         intro H_fbc
         have hb_col : Collinear f b c := collinear_of_between H_fbc
         have hg_col : Collinear f c g := collinear_of_between hg1

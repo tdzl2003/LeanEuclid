@@ -305,7 +305,7 @@ namespace Geometry.HilbertAxioms3D
         | isTrue h => Decidable.isTrue h
 
 
-      Between(a b c) := Between a.val b.val c.val,
+      Between(a b c) := G.Between a.val b.val c.val,
       between_ne{a b c}(h) := by
         have h := G.between_ne h
         unfold List.Distinct at h
