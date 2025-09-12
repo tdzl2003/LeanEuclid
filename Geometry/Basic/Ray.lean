@@ -1,34 +1,25 @@
 import Geometry.Basic.Point
+import Geometry.Basic.Line
 
 namespace Geometry
-  structure Segment(Point: Type)[G: PointOrder Point] where
-    p1: Point
-    p2: Point
-
-  def Segment.valid {Point: Type}[G: PointOrder Point](s: Segment Point): Prop :=
-    s.p1 ≠ s.p2
-
-  instance {Point: Type}[G: PointOrder Point]: Membership Point (Segment Point) where
-      mem (s: Segment Point) (p: Point) : Prop := G.Between s.p1 p s.p2
-
-  structure RayRaw(Point: Type)[G: PointOrderExt Point] where
+  structure RayRaw(Point: Type)[G: LineConnWithPointOrderExt Point] where
     start: Point
     p: Point
 
   namespace RayRaw
-    def Equiv {Point}[G: PointOrderExt Point](l₁ l₂: RayRaw Point): Prop
+    def Equiv {Point}[G: LineConnWithPointOrderExt Point](l₁ l₂: RayRaw Point): Prop
       := l₁.start = l₂.start ∧ (
         l₁.p = l₂.p ∨
         G.Between l₁.start l₁.p l₂.p ∨
         G.Between l₁.start l₂.p l₁.p
       )
 
-    theorem equiv_refl{Point}[G: PointOrderExt Point](l: RayRaw Point): Equiv l l :=
+    theorem equiv_refl{Point}[G: LineConnWithPointOrderExt Point](l: RayRaw Point): Equiv l l :=
     by
       unfold Equiv
       simp only [or_self, true_or, and_self]
 
-    theorem equiv_symm{Point}[G: PointOrderExt Point]{l₁ l₂: RayRaw Point}:
+    theorem equiv_symm{Point}[G: LineConnWithPointOrderExt Point]{l₁ l₂: RayRaw Point}:
       Equiv l₁ l₂ →  Equiv l₂ l₁ :=
     by
       intro ⟨h1, h2⟩
@@ -46,7 +37,7 @@ namespace Geometry
         rw [← h1]
         exact h2
 
-    theorem equiv_trans{Point}[G: PointOrderExt Point]{l₁ l₂ l₃: RayRaw Point} :
+    theorem equiv_trans{Point}[G: LineConnWithPointOrderExt Point]{l₁ l₂ l₃: RayRaw Point} :
       Equiv l₁ l₂ →  Equiv l₂ l₃ → Equiv l₁ l₃ :=
     by
       intro ⟨h1, h2⟩ ⟨h3, h4⟩
@@ -86,12 +77,11 @@ namespace Geometry
           apply Or.inr
           exact h.1
 
-    instance setoid(Point)[G: PointOrderExt Point] : Setoid (RayRaw Point) where
+    instance setoid(Point)[G: LineConnWithPointOrderExt Point] : Setoid (RayRaw Point) where
       r := Equiv
       iseqv := ⟨equiv_refl, equiv_symm, equiv_trans⟩
   end RayRaw
 
-  def Ray{Point}[G: PointOrderExt Point] := Quotient (RayRaw.setoid Point)
-
+  def Ray{Point}[G: LineConnWithPointOrderExt Point] := Quotient (RayRaw.setoid Point)
 
 end Geometry
