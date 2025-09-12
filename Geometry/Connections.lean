@@ -3,19 +3,19 @@ import Mathlib.Tactic.ByContra
 import Mathlib.Tactic.Use
 import Mathlib.Tactic.NormNum
 
-namespace Geometry.HilbertAxioms2D
-  variable {Point: Type} [G:HilbertAxioms2D Point]
+namespace Geometry
+  variable {Point: Type} [G:Connection Point]
 
   /-- Another way to express Axiom I.2: that is, if AB = a and AC = a, where B ̸= C, then is also BC = a.  -/
   theorem line_bc_eq_of_ab_and_ac_eq{a b c: Point}{l: G.Line}(hab: a≠b)(hac: a≠c)(hbc:b≠c):
-      mk_line hab = l → mk_line hac = l → mk_line hbc = l
+      G.mk_line hab = l → G.mk_line hac = l → G.mk_line hbc = l
       :=
   by
     intro hab' hac'
-    have hb : b ∈ l := by rw [←hab']; exact (mk_line _).property.right
-    have hc : c ∈ l := by rw [←hac']; exact (mk_line _).property.right
+    have hb : b ∈ l := by rw [←hab']; exact (G.mk_line _).property.right
+    have hc : c ∈ l := by rw [←hac']; exact (G.mk_line _).property.right
     apply Eq.symm
-    exact unique_line_from_two_points hbc hb hc
+    exact G.unique_line_from_two_points hbc hb hc
 
   theorem line_eq_of_two_points{a b : Point}{l1 l2: G.Line}:
     a≠b → a∈ l1 → a ∈ l2 → b ∈ l1 → b ∈ l2 → l1=l2 :=
@@ -34,8 +34,8 @@ namespace Geometry.HilbertAxioms2D
   by
     intro p1 p2 hp1l1 hp1l2 hp2l1 hp2l2
     by_contra hne
-    have t1:= unique_line_from_two_points hne hp1l1 hp2l1
-    have t2:= unique_line_from_two_points hne hp1l2 hp2l2
+    have t1:= G.unique_line_from_two_points hne hp1l1 hp2l1
+    have t2:= G.unique_line_from_two_points hne hp1l2 hp2l2
     have : l1 = l2 := by
       rw [t1, t2]
     exact absurd this h

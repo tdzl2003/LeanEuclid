@@ -2,11 +2,11 @@ import Geometry.Basic
 import Mathlib.Tactic.Linarith
 
 namespace Geometry
-  structure BrokenLine(Point: Type)[Membership Point (Segment Point)] where
+  structure BrokenLine(Point: Type)[G: PointOrder Point][Membership Point (Segment Point)] where
     vertices: List Point
     hc: vertices.length ≥ 2
 
-  variable {Point}[Membership Point (Segment Point)]
+  variable {Point}[G: PointOrder Point][Membership Point (Segment Point)]
 
   def BrokenLine.edgeAt
     (poly: BrokenLine Point)(i: Fin (poly.vertices.length - 1)):
@@ -42,7 +42,7 @@ namespace Geometry.HilbertAxioms2D
     vertices: List Point
     hc: vertices.length ≥ 3
 
-  variable {Point}[Membership Point (Segment Point)]
+  variable {Point}[G: PointOrder Point][Membership Point (Segment Point)]
 
   def Polygon.edgeAt (poly: Polygon Point)(i: Fin poly.vertices.length): Segment Point :=
     let v1 := poly.vertices.get i
@@ -52,9 +52,7 @@ namespace Geometry.HilbertAxioms2D
   def Polygon.isSimple (poly: Polygon Point): Prop :=
     ∀ i j : Fin poly.vertices.length,
       i ≠ j →
-      let e1 := poly.edgeAt i
-      let e2 := poly.edgeAt j
-      ∀ p: Point, p ∈ e1 → p ∈ e2 → False
+      ∀ p: Point, p ∈ poly.edgeAt i → p ∈ poly.edgeAt j → False
 
 
   instance : Membership Point (Polygon Point) where
@@ -70,7 +68,7 @@ namespace Geometry.HilbertAxioms2D
   the theorem statement true. So we take the inside and outside as primitive notions, and add
   axioms that they satisfy.
     -/
-  class PolygonalRegion[G:HilbertAxioms2D Point](poly: Polygon Point)(hSimple: poly.isSimple) where
+  class PolygonalRegionConnection(poly: Polygon Point)(hSimple: poly.isSimple) extends LineDef Point where
     inside: Point → Prop
     outside: Point → Prop
     inside_outside_disjoint: ∀ p: Point, ¬(inside p ∧ outside p)
@@ -91,7 +89,7 @@ namespace Geometry.HilbertAxioms2D
         γ.last = b →
         ∃ p: Point, p ∈ γ ∧ p ∈ poly
       )
-    not_exists_inside_line: ¬ ∃ l:G.Line, ∀ p ∈ l, inside p
-    exists_outside_line: ∃ l:G.Line, ∀ p ∈ l, outside p
+    not_exists_inside_line: ¬ ∃ l:Line, ∀ p ∈ l, inside p
+    exists_outside_line: ∃ l:Line, ∀ p ∈ l, outside p
 
 end Geometry.HilbertAxioms2D

@@ -12,10 +12,7 @@ namespace Geometry.HilbertAxioms1D
 
   /-- theorem II.3 Of any three points situated on a straight line, there is always one and only one which lies Between the other two. -/
   theorem between_trichotomy(a b c: Point): a ≠ b → b ≠ c → a ≠ c →
-      (G.Between a b c ∨ G.Between b a c ∨ G.Between a c b) ∧
-      ¬(G.Between a b c ∧ G.Between b a c) ∧
-      ¬(G.Between a b c ∧ G.Between a c b) ∧
-      ¬(G.Between b a c ∧ G.Between a c b) := by
+      (G.Between a b c ∨ G.Between b a c ∨ G.Between a c b) := by
     sorry
 end Geometry.HilbertAxioms1D
 

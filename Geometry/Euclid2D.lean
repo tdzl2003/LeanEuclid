@@ -1,5 +1,6 @@
 import Geometry.Basic
 import Geometry.Polygon
+import Geometry.HilbertAxioms2D
 
 namespace Geometry.Euclid2D
 
@@ -55,28 +56,30 @@ namespace Geometry.Euclid2D
 
   axiom mk_line_intersection{l1 l2: Line}(hne: l1 ≠ l2)(he: ∃ p, p∈l1 ∧ p ∈ l2) : {p: Point // p ∈ l1 ∧ p ∈ l2}
 
-  noncomputable instance: HilbertAxioms2D.Defs Point where
+  noncomputable instance: PointDef Point where
     instDecidableEq := by infer_instance
-    Line := Line
-    instMemLine := by infer_instance
-    instDecidableMemLine := by infer_instance
 
-  noncomputable instance: HilbertAxioms2D.Connections Point where
-    mk_line := mk_line
-    mk_line_intersection := mk_line_intersection
-    unique_line_from_two_points := unique_line_from_two_points
-    line_exists_two_points := line_exists_two_points
-    exists_three_noncollinear_points := exists_three_noncollinear_points
-
-  noncomputable instance: HilbertAxioms2D.Orders Point where
+  noncomputable instance: PointOrder Point where
     Between := Between
     between_ne := between_ne
     between_symm := between_symm
     extension_exists := extension_exists
+
+  noncomputable instance : LineDef Point where
+    Line := Line
+    instMemLine := by infer_instance
+    instDecidableMemLine := by infer_instance
+
+  noncomputable instance: LineConnection Point where
+    mk_line := mk_line
+    mk_line_intersection := mk_line_intersection
+    unique_line_from_two_points := unique_line_from_two_points
+    line_exists_two_points := line_exists_two_points
     collinear_of_between := collinear_of_between
-    pasch_axiom:=pasch_axiom
 
   noncomputable instance: HilbertAxioms2D Point where
+    exists_three_noncollinear_points := exists_three_noncollinear_points
+    pasch_axiom:=pasch_axiom
 
   section
     abbrev Segment := Geometry.Segment Point
@@ -109,7 +112,7 @@ namespace Geometry.Euclid2D
     theorem exists_outside_line: ∀ (poly: Polygon), poly.isSimple → ∃ l:Line, ∀ p ∈ l, outside poly p := by
       sorry
 
-    noncomputable instance {poly: Polygon}{hSimple: poly.isSimple}: HilbertAxioms2D.PolygonalRegion poly hSimple where
+    noncomputable instance {poly: Polygon}(hSimple: poly.isSimple): HilbertAxioms2D.PolygonalRegionConnection poly hSimple where
       inside := inside poly
       outside := outside poly
       inside_outside_disjoint := inside_outside_disjoint poly
