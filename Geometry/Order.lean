@@ -1,20 +1,19 @@
 import Geometry.Basic
-import Geometry.Connections
 import Mathlib.Tactic.ByContra
 import Mathlib.Tactic.NormNum
 import Mathlib.Data.Set.Basic
 import Mathlib.Data.Finset.Basic
 import Mathlib.Data.List.Basic
 
-namespace Geometry.HilbertAxioms2D
-  variable {Point: Type}[G: HilbertAxioms2D Point]
+namespace Geometry
+  variable {Point: Type}[G: LineConnection Point]
   /--
     theorem II.4: Any four points A, B, C, D of a straight line can always be so arranged that B
     shall lie between A and C and also between A and D, and, furthermore, that C shall
     lie between A and D and also between B and D.
   -/
-  theorem four_points_ordering{a b c d : Point} :
-      a ≠ b → a ≠ c → a ≠ d → b ≠ c → b ≠ d → c ≠ d →
+  theorem four_points_ordering{a b c d : Point}:
+      [a, b, c, d].Distinct → ∃ l: G.Line, a∈l ∧ b∈l ∧ c∈l ∧ d∈l →
       ∃ (a' b' c' d' : Point),
         ({a', b', c', d'}: Set Point) =  {a,b,c,d} ∧
         (G.Between a' b' c' ∧ G.Between a' b' d' ∧ G.Between a' c' d' ∧ G.Between b' c' d') :=
@@ -37,7 +36,7 @@ namespace Geometry.HilbertAxioms2D
 
   /-- Theorem 4.1 : For any finite set of points on a straight line, there exists a linearly ordered list
       of these points, and only two such lists exist (the forward and reverse order). -/
-  theorem linear_ordering_of_collinear_points[G: HilbertAxioms1D Point](S : Finset Point) :
+  theorem linear_ordering_of_collinear_points(S : Finset Point) :
       ∃ (L : List Point),
         L.toFinset = S ∧
         List.Nodup L ∧
@@ -52,14 +51,12 @@ namespace Geometry.HilbertAxioms2D
   by
     sorry
 
-end Geometry.HilbertAxioms2D
+end Geometry
 
-namespace Geometry.HilbertAxioms2D
-  variable {Point: Type}[G: HilbertAxioms2D Point]
-
+namespace Geometry
 
   section
-    variable {Point: Type}[G: HilbertAxioms2D Point]
+    variable {Point: Type}[G: LineConnection Point]
 
     /-- two point is on same side of a line. -/
     def SameSideOfLine(l: G.Line)(a b: Point): Prop :=
@@ -69,11 +66,8 @@ namespace Geometry.HilbertAxioms2D
     def OtherSideOfLine(l: G.Line)(a b: Point): Prop :=
       ¬ a ∈ l ∧ ¬ b ∈ l ∧ ∃ c: Point, G.Between a c b ∧ c ∈ l
 
-
-
-
     theorem onSameSide.not_liesOn(l: G.Line)(a b: Point):
-        G.SameSideOfLine l a b → ¬ a ∈ l ∧ ¬ b ∈ l :=
+        SameSideOfLine l a b → ¬ a ∈ l ∧ ¬ b ∈ l :=
     by
       sorry
 
@@ -133,4 +127,4 @@ namespace Geometry.HilbertAxioms2D
       sorry
 
   end
-end Geometry.HilbertAxioms2D
+end Geometry
