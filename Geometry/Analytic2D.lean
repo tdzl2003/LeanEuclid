@@ -2,6 +2,8 @@ import Geometry.Basic
 import Geometry.Polygon
 import Geometry.HilbertAxioms2D
 import Mathlib.Data.Real.Basic
+import Mathlib.Tactic.FieldSimp
+import Mathlib.Tactic.Ring
 
 namespace Geometry.Analytic2D
   /-- Define a point a (x, y) -/
@@ -9,31 +11,139 @@ namespace Geometry.Analytic2D
     x: ℝ
     y: ℝ
 
+  @[simp]
   instance: HMul Point Real Point where
     hMul(a: Point)(b: Real) := Point.mk (a.x*b) (a.y*b)
 
-  instance: Add Point where
-    add(a: Point)(b: Point) :=  Point.mk (a.x+b.x) (a.y+b.y)
+  @[simp]
+  instance: HAdd Point Point Point where
+    hAdd(a: Point)(b: Point) :=  Point.mk (a.x+b.x) (a.y+b.y)
 
   def Between(a: Point)(b: Point)(c: Point): Prop :=
-    a ≠ c ∧ ∃ r: ℝ, r > 0 ∧ r < 1 ∧ a = b * r + c* (r-1)
+    a ≠ c ∧ ∃ r: ℝ, r > 0 ∧ r < 1 ∧ b = a * r + c* (1-r)
 
   /-- Between relation is exclusive. -/
   theorem between_ne{a b c: Point}:
     Between a b c → [a, b, c].Distinct :=
   by
-    sorry
+    unfold Between
+    intro ⟨hne, r, hr⟩
+    simp only [List.Distinct, List.pairwise_cons, List.mem_cons, List.not_mem_nil, or_false,
+      forall_eq_or_imp, forall_eq, IsEmpty.forall_iff, implies_true, List.Pairwise.nil, and_self,
+      and_true]
+    and_intros
+    . intro he
+      rw [he] at hr
+      subst he
+      rcases hr with ⟨r_pos, r_lt1, h_eq⟩
+      apply hne
+      rw [Point.mk.injEq] at h_eq ⊢
+      simp only [instHAddPoint, instHMulPointReal] at h_eq
+      have hr1: 1-r ≠ 0 := by linarith
+      and_intros
+      . have : a.x * (1 - r) = c.x * (1 - r) := by linarith
+        apply mul_right_cancel₀ hr1
+        exact this
+      . have : a.y * (1 - r) = c.y * (1 - r) := by linarith
+        apply mul_right_cancel₀ hr1
+        exact this
+    . exact hne
+    . intro he
+      rw [he] at hr
+      subst he
+      rcases hr with ⟨r_pos, r_lt1, h_eq⟩
+      apply hne
+      rw [Point.mk.injEq] at h_eq ⊢
+      have hr0: r ≠ 0 := by linarith
+      simp only [instHAddPoint, instHMulPointReal] at h_eq
+      and_intros
+      . have : a.x * r = b.x * r := by linarith
+        apply mul_right_cancel₀ hr0
+        exact this
+      . have : a.y * r = b.y * r := by linarith
+        apply mul_right_cancel₀ hr0
+        exact this
 
   /-- axiom II.1: If A, B, C are points of a straight line and B lies Between A and C, then B lies also Between C and A.-/
   theorem between_symm{a b c: Point}:
     Between a b c → Between c b a :=
   by
-    sorry
+    unfold Between
+    intro ⟨hne, r, hr0, hr1, h1⟩
+    and_intros ; apply Ne.symm hne
+    use 1-r
+    and_intros
+    . linarith
+    . linarith
+    rw [h1]
+    field_simp
+    and_intros
+    . linarith
+    . linarith
 
   /-- axiom II.2.2 If A and C are two points of a straight line, at least one point D so situated that C lies Between A and D.-/
   def extension_exists{a c: Point}(hne: a ≠ c ):
     {d: Point // Between a c d} :=
-    sorry
+    let d := a * (-1: ℝ) + c * (2: ℝ)
+    ⟨d, by
+        and_intros
+        . intro had
+          unfold d at had
+          apply hne
+          rw [Point.mk.injEq] at had ⊢
+          simp only [instHAddPoint, instHMulPointReal] at had
+          and_intros
+          . linarith
+          . linarith
+        . use (0.5: ℝ)
+          unfold d
+          and_intros
+          . linarith
+          . linarith
+          . rw [Point.mk.injEq]
+            simp only [instHAddPoint, instHMulPointReal]
+            and_intros
+            . linarith
+            . linarith
+    ⟩
+
+  theorem between_not_symm_left{a b c : Point}:
+    Between a b c → ¬ Between b a c :=
+  by
+    unfold Between
+    intro ⟨hac, r, hr0, hr1, hr⟩
+    rw [not_and_or]
+    apply Or.inr
+    rw [not_exists]
+    intro x ⟨hx0, hx1, hx⟩
+    apply hac
+    rw [hr] at hx
+    rw [Point.mk.injEq] at hx ⊢
+    simp only [instHAddPoint, instHMulPointReal] at hx
+    have hnz: 1-r*x ≠ 0 := by
+      have : r * x < 1 := by
+        calc r * x < 1 * x := by
+              apply mul_lt_mul_of_pos_right hr1 hx0
+        _ < 1 := by linarith
+      linarith
+    and_intros
+    . replace hx := hx.1
+      have : a.x * (1-r*x) = c.x*(1-r*x) := by
+        linarith
+      apply mul_right_cancel₀ hnz this
+    . have : a.y * (1-r*x) = c.y*(1-r*x) := by
+        linarith
+      apply mul_right_cancel₀ hnz this
+
+  theorem between_not_symm_right{a b c : Point}:
+    Between a b c → ¬ Between a c b :=
+  by
+    intro h
+    replace h := between_symm h
+    replace h := between_not_symm_left h
+    intro h'
+    apply h
+    apply between_symm h'
 
   /-- Define a raw line by ax + by + c = 0-/
   structure LineRaw where
@@ -58,10 +168,20 @@ namespace Geometry.Analytic2D
       refine ⟨1, zero_ne_one.symm, ?_, ?_, ?_⟩ <;> simp only [one_mul]
 
     theorem equiv_symm (h : Equiv l₁ l₂) : Equiv l₂ l₁ := by
-      sorry
+      let ⟨k, hk0, ha, hb, hc⟩ := h
+      use 1/k
+      rw [ha, hb, hc]
+      field_simp
 
-    theorem equiv_trans (h₁ : Equiv l₁ l₂) (h₂ : Equiv l₂ l₃) : Equiv l₁ l₃ := by
-      sorry
+    theorem equiv_trans (h₁ : Equiv l₁ l₂) (h₂ : Equiv l₂ l₃) : Equiv l₁ l₃
+      :=
+    by
+      let ⟨k1, hk1, ha1, hb1, hc1⟩ := h₁
+      let ⟨k2, hk2, ha2, hb2, hc2⟩ := h₂
+      use k2 * k1
+      rw [ha2, hb2, hc2, ha1, hb1, hc1]
+      constructor; positivity
+      simp only [mul_assoc, and_self]
 
     instance setoid : Setoid LineRaw where
       r := Equiv
@@ -70,12 +190,43 @@ namespace Geometry.Analytic2D
     def LiesOn (p : Point) (l : LineRaw) : Prop :=
       l.a * p.x + l.b * p.y + l.c = 0
 
-    theorem liesOn_equiv (p : Point) (l₁ l₂ : LineRaw) (h : LineRaw.Equiv l₁ l₂) :
-      LiesOn p l₁ ↔ LiesOn p l₂ := by
-        sorry
+    theorem liesOn_equiv {p : Point} {l₁ l₂ : LineRaw} (h : LineRaw.Equiv l₁ l₂) :
+      LiesOn p l₁ →  LiesOn p l₂ :=
+    by
+      replace ⟨k, hk0, hka, hkb, hkc⟩ := h
+      intro hpl
+      unfold LiesOn at hpl ⊢
+      rw [hka, hkb, hkc]
+      rw [mul_assoc, mul_assoc, ← mul_add, ← mul_add, hpl]
+      apply mul_zero
 
-    noncomputable def mk_line(a b: Point)(h: a≠b): LineRaw :=
-      LineRaw.mk (b.y-a.y) (a.x-b.x) (b.x*a.y - a.x*b.y) (by sorry)
+    theorem liesOn_equiv_iff {p : Point} {l₁ l₂ : LineRaw} (h : LineRaw.Equiv l₁ l₂) :
+      LiesOn p l₁ ↔ LiesOn p l₂ :=
+    by
+      constructor
+      . apply liesOn_equiv h
+      . replace h:= equiv_symm h
+        apply liesOn_equiv h
+
+    noncomputable def mk_line{a b: Point}(h: a≠b): LineRaw :=
+      have h': b.y - a.y ≠ 0 ∨ a.x - b.x ≠ 0 := by
+        by_contra h'
+        rw [not_or, not_ne_iff, not_ne_iff] at h'
+        apply h
+        rw [Point.mk.injEq]
+        and_intros
+        . linarith
+        . linarith
+      LineRaw.mk (b.y-a.y) (a.x-b.x) (b.x*a.y - a.x*b.y) h'
+
+    theorem mem_mk_line{a b : Point}(h: a≠b):
+      LiesOn a (mk_line h) ∧ LiesOn b (mk_line h) :=
+    by
+      unfold LiesOn mk_line
+      simp only
+      and_intros
+      . linarith
+      . linarith
 
     noncomputable instance (p: Point)(l: LineRaw): Decidable (LiesOn p l) := by
       unfold LiesOn
@@ -86,7 +237,7 @@ namespace Geometry.Analytic2D
   def Line := Quotient LineRaw.setoid
 
   private def LiesOn(l: Line)(a: Point): Prop :=
-    Quotient.lift (LineRaw.LiesOn a) (fun l₁ l₂ h => propext (LineRaw.liesOn_equiv a l₁ l₂ h)) l
+    Quotient.lift (LineRaw.LiesOn a) (fun _ _ h => propext (LineRaw.liesOn_equiv_iff h)) l
 
   instance: Membership Point Line where
     mem := LiesOn
@@ -102,7 +253,11 @@ namespace Geometry.Analytic2D
     decidable_of_iff (LineRaw.LiesOn a lraw) h
 
   noncomputable def mk_line{a b: Point}(h: a≠b): {l: Line // a ∈ l ∧ b ∈ l} :=
-    ⟨Quotient.mk'' <| LineRaw.mk_line a b h, by sorry⟩
+    ⟨Quotient.mk'' <| LineRaw.mk_line h,
+      by
+        simp only [instMembershipPointLine, LiesOn, Quotient.lift_mk]
+        apply LineRaw.mem_mk_line
+    ⟩
 
   theorem unique_line_from_two_points{a b: Point}{l: Line}(h:  a ≠ b):
       a ∈ l → b ∈ l → l = mk_line h :=
@@ -140,6 +295,7 @@ namespace Geometry.Analytic2D
     between_ne := between_ne
     between_symm := between_symm
     extension_exists := extension_exists
+    between_not_symm_right := between_not_symm_right
 
   noncomputable instance : LineDef Point where
     Line := Line

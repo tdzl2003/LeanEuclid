@@ -56,6 +56,8 @@ namespace Geometry.Euclid2D
 
   axiom mk_line_intersection{l1 l2: Line}(hne: l1 ≠ l2)(he: ∃ p, p∈l1 ∧ p ∈ l2) : {p: Point // p ∈ l1 ∧ p ∈ l2}
 
+  axiom between_not_symm_right{a b c : Point}: Between a b c → ¬ Between a c b
+
   noncomputable instance: PointDef Point where
     instDecidableEq := by infer_instance
 
@@ -64,6 +66,7 @@ namespace Geometry.Euclid2D
     between_ne := between_ne
     between_symm := between_symm
     extension_exists := extension_exists
+    between_not_symm_right := between_not_symm_right
 
   noncomputable instance : LineDef Point where
     Line := Line

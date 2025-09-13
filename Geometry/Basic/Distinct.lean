@@ -1,5 +1,6 @@
 
 namespace List
+  @[simp]
   def Distinct{α}(l: List α):Prop :=
     l.Pairwise (· ≠ ·)
 
