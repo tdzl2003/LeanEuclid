@@ -338,13 +338,273 @@ namespace Geometry
 
       ⟨b, hFinal⟩
 
+    /--
+      axiom II.3.1 Of any three points situated on a straight line, there is always one
+      which lies between the other two.
+      This can be proven in 2D.
+    --/
+    theorem between_trichotomy{a b c: Point}: Collinear a b c → a ≠ b → b ≠ c → a ≠ c →
+      (Between a b c ∨ Between b a c ∨ Between a c b) :=
+    by
+      intro hcol hab hbc hac
+      by_contra h
+      rw [not_or, not_or] at h
+      have ⟨h1, h2, h3⟩ := h
+      apply h1 ; clear h1
+      let ⟨l, ⟨hal, hbl, hcl⟩⟩ := hcol
+      let ⟨d, hd⟩ := mk_point_not_on_line l
+      have hbd: b ≠ d := by
+        intro h
+        apply hd
+        rw [← h]
+        exact hbl
+      let ⟨g, hg⟩ := G.extension_exists hbd
+
+      have had: a ≠ d := by
+        intro h
+        apply hd
+        rw [← h]
+        exact hal
+
+      -- l1 = line AD
+      let ⟨l1, ⟨hal1,hdl1⟩ ⟩ := mk_line had
+
+      have hacd : ¬ Collinear a c d := by
+        intro h
+        apply hd
+        apply not_collinear_of_nin hac h hal hcl
+
+      have hbg: b ≠ g := by
+        have h := G.between_ne hg
+        apply h.select' 0 2
+        all_goals norm_num
+
+      have hbcg : ¬ Collinear b g c := by
+        intro hbgc
+        apply hacd
+        have hg := collinear_comm_right $ collinear_of_between hg
+        have hbcd := collinear_trans hbg hbgc hg
+        have hbcd := collinear_comm_left hbcd
+        have hcol := collinear_comm_cross hcol
+        apply collinear_comm_rotate'
+        apply collinear_trans _ hbcd hcol
+        apply Ne.symm hbc
+
+      have hbl1: b ∉ l1 := by
+        intro hbl1
+        have : l1 = l := by
+          apply line_eq_of_two_points hab hal1 hal hbl1 hbl
+        subst this
+        exact hd hdl1
+
+      have hcl1: c ∉ l1 := by
+        intro hcl1
+        have : l1 = l := by
+          apply line_eq_of_two_points hac hal1 hal hcl1 hcl
+        subst this
+        exact hd hdl1
+
+      have hdg: d ≠ g := by
+        apply (between_ne hg).select' 1 2
+        all_goals norm_num
+
+      have hgl1: g ∉ l1 := by
+        intro hgl1
+        have hadg : Collinear a d g := by
+          use l1
+        have hg := collinear_of_between hg
+        have hdab: Collinear d a b := by
+          apply collinear_trans hdg
+          exact collinear_comm_rotate hadg
+          exact collinear_comm_rotate hg
+        apply hacd
+        apply collinear_trans hab
+        exact hcol
+        exact collinear_comm_rotate hdab
+
+      let ⟨e, ⟨he1, he2⟩⟩  := G.pasch_axiom hbcg hbl1 hgl1 hcl1 (by use d)
+
+      have hae: a ≠ e := by
+        intro hae
+        subst hae
+        simp only [h2, or_false] at he1
+        have ⟨l', hgl', hal', hcl'⟩:= collinear_of_between he1
+        have : l = l' := by
+          apply line_eq_of_two_points hac hal hal' hcl hcl'
+        subst this
+        have ⟨l'', hbl'', hdl'', hgl''⟩ := collinear_of_between hg
+        have : l = l'' := by
+          apply line_eq_of_two_points hbg hbl hbl'' hgl' hgl''
+        subst this
+        contradiction
+
+      have : ¬ Between b e c := by
+        intro hbec
+        have ⟨l', hbl', hel', hcl'⟩  := collinear_of_between hbec
+        have : l = l' := by
+          apply line_eq_of_two_points hbc hbl hbl' hcl hcl'
+        subst this
+        have : l = l1 := by
+          apply line_eq_of_two_points hae hal hal1 hel' he2
+        subst this
+        contradiction
+
+      simp only [this, or_false] at he1
+
+      -- l2 = line CD
+      have hcd: c ≠ d := by
+        intro h
+        apply hd
+        rw [← h]
+        exact hcl
+
+      let ⟨l2, ⟨hcl2,hdl2⟩ ⟩ := mk_line hcd
+
+      have hagb : ¬ Collinear b g a := by
+        intro h
+        apply hbcg
+        apply collinear_trans (Ne.symm hab)
+        apply collinear_comm_right h
+        apply collinear_comm_left hcol
+
+      have hal2: a ∉ l2 := by
+        intro hal2
+        have: l = l2 := by
+          apply line_eq_of_two_points hac hal hal2 hcl hcl2
+        subst this
+        contradiction
+
+      have hcg: c ≠ g := by
+        intro hcg
+        subst hcg
+        apply hagb
+        apply collinear_comm_rotate
+        exact hcol
+
+      have hde: d ≠ e := by
+        intro hde
+        subst hde
+        have ⟨l', ⟨hgl', hdl', hcl'⟩ ⟩ := collinear_of_between he1
+        have : l2 = l' := by
+          apply line_eq_of_two_points hcd hcl2 hcl' hdl2 hdl'
+        subst this
+        have ⟨l'', ⟨hbl'', hdl'', hgl''⟩⟩ := collinear_of_between hg
+        have : l2 = l'' := by
+          apply line_eq_of_two_points hdg hdl' hdl'' hgl' hgl''
+        subst this
+        apply hbcg
+        use l2
+
+      have hgl2: g ∉ l2 := by
+        intro hgl2
+        have ⟨l', ⟨hgl', hel', hcl'⟩ ⟩ := collinear_of_between he1
+        have : l2 = l' := by
+          apply line_eq_of_two_points hcg hcl2 hcl' hgl2 hgl'
+        subst this
+        have : l2 = l1 := by
+          apply line_eq_of_two_points hde hdl2 hdl1 hel' he2
+        subst this
+        contradiction
+
+      have hbl2: b ∉ l2 := by
+        intro hbl2
+        have ⟨l', ⟨hal', hbl', hcl'⟩ ⟩ := hcol
+        have: l2 = l' := by
+          apply line_eq_of_two_points hbc hbl2 hbl' hcl2 hcl'
+        subst this
+        apply hacd
+        use l2
+
+      let ⟨f, ⟨hf1, hf2⟩⟩  := G.pasch_axiom hagb hbl2 hgl2 hal2 (by use d)
+
+      have hcf: c ≠ f := by
+        intro he
+        subst he
+        rw [between_symm_iff] at h3
+        simp only [h3, or_false] at hf1
+        have ⟨l', ⟨hgl', hcl', hal' ⟩⟩ := collinear_of_between hf1
+        have ⟨l'', ⟨hal'', hbl'', hcl''⟩ ⟩ := hcol
+        have : l' = l'' := by
+          apply line_eq_of_two_points hac hal' hal'' hcl' hcl''
+        subst this
+
+        have ⟨l''', ⟨hbl''', hdl''', hgl'''⟩⟩ := collinear_of_between hg
+        have: l' = l''' := by
+          apply line_eq_of_two_points hbg hbl'' hbl''' hgl' hgl'''
+        subst this
+        apply hacd
+        use l'
+
+      have : ¬ Between b f a:= by
+        intro hbfa
+        have ⟨l', ⟨hbl', hfl', hal'⟩ ⟩ := collinear_of_between hbfa
+        have ⟨l'', ⟨hal'', hbl'', hcl''⟩ ⟩ := hcol
+        have : l' = l'' := by
+          apply line_eq_of_two_points hab hal' hal'' hbl' hbl''
+        subst this
+        have: l2 = l' := by
+          apply line_eq_of_two_points hcf hcl2 hcl'' hf2 hfl'
+        subst this
+        apply hacd
+        use l2
+
+      simp only [this, or_false] at hf1
+
+      have hel2: e ∉ l2 := by
+        intro hel2
+        sorry
+
+      have hage: ¬ Collinear a g e := by
+        sorry
+
+      rw [between_symm_iff] at hf1
+
+      let ⟨d', ⟨hd'1, hd'2⟩⟩ := G.pasch_axiom hage hal2 hgl2 hel2 (by use f)
+
+
+      have : d = d' := by
+        sorry
+
+      subst this
+
+      have: ¬ Between g d e := by
+        sorry
+      simp only [this, false_or] at hd'1
+
+      have haec: ¬ Collinear a e c := by
+        sorry
+
+      -- l3 = line BD
+      let ⟨l3, ⟨hbl3,hdl3⟩ ⟩ := mk_line hbd
+
+      have hal3: a ∉ l3 := by
+        sorry
+
+      have hel3: e ∉ l3 := by
+        sorry
+
+      have hcl3: c ∉ l3 := by
+        sorry
+
+      let ⟨b', ⟨hb'1, hb'2⟩⟩ := G.pasch_axiom haec hal3 hel3 hcl3 (by use d)
+
+      have : b = b' := by
+        sorry
+      subst this
+
+      have : ¬ Between e b c := by
+        sorry
+      simp only [this, false_or] at hb'1
+      exact hb'1
+
+
     instance: PointOrderExt Point where
       between_exists := between_exists
       between_trans := sorry
       between_trans' := sorry
 
     instance: LineConnWithPointOrderExt Point where
-      between_trichotomy := sorry
+      between_trichotomy := between_trichotomy
 
   end HilbertAxioms2D
 

@@ -53,5 +53,13 @@ namespace Geometry
     between_trans' {A B C D : Point} :
       Between A B C → Between A C D → Between A B D ∧ Between B C D
 
+  section
+    variable {Point: Type}[G:PointOrder Point]
+    theorem between_symm_iff{a b c: Point}:
+      G.Between a b c ↔ G.Between c b a :=
+    by
+      constructor
+      all_goals apply G.between_symm
 
+  end
 end Geometry

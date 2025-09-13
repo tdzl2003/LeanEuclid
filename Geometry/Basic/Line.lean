@@ -149,6 +149,11 @@ namespace Geometry
       use l
       simp only [hl, and_self]
 
+    theorem collinear_comm_rotate'{a b c: Point}: Collinear a b c → Collinear c a b := by
+      intro ⟨l, hl⟩
+      use l
+      simp only [hl, and_self]
+
     theorem collinear_comp{a b c d: Point}(hne: a≠b): Collinear a b c → Collinear a b d → Collinear a c d := by
       intro h1 h2
       rcases h1 with ⟨l1, ha1, hb1, hc1⟩
@@ -168,6 +173,15 @@ namespace Geometry
       rw [← this] at hd2
       use l1
 
+    theorem not_collinear_of_nin{a b c: Point}{l: G.Line}:
+      a≠b → Collinear a b c → a∈l → b∈l → c∈l :=
+    by
+      intro hne hcol ha hb
+      have ⟨l', ⟨ha', hb', hc'⟩⟩ := hcol
+      have : l=l' := by
+        apply line_eq_of_two_points hne ha ha' hb hb'
+      subst this
+      exact hc'
   end
 
   class LineConnWithPointOrderExt(Point: Type) extends LineConnection Point, PointOrderExt Point
