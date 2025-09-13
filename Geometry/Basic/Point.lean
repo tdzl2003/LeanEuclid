@@ -55,6 +55,7 @@ namespace Geometry
 
   section
     variable {Point: Type}[G:PointOrder Point]
+    @[grind]
     theorem between_symm_iff{a b c: Point}:
       G.Between a b c ↔ G.Between c b a :=
     by

@@ -372,7 +372,7 @@ namespace Geometry
       have hacd : ¬ Collinear a c d := by
         intro h
         apply hd
-        apply not_collinear_of_nin hac h hal hcl
+        apply on_line_of_collinear hac h hal hcl
 
       have hbg: b ≠ g := by
         have h := G.between_ne hg
@@ -550,51 +550,175 @@ namespace Geometry
 
       simp only [this, or_false] at hf1
 
+      have hec: e ≠ c := by
+        apply (between_ne he1).select' 1 2
+        all_goals norm_num
+
       have hel2: e ∉ l2 := by
         intro hel2
-        sorry
+        have ⟨l',⟨hgl', hel', hcl'⟩ ⟩  := collinear_of_between he1
+        have : l2 = l' := by
+          apply line_eq_of_two_points hec hel2 hel' hcl2 hcl'
+        subst this
+        have ⟨l'', ⟨hbl'', hdl'', hgl'' ⟩ ⟩ := collinear_of_between hg
+        have : l2 = l'' := by
+          apply line_eq_of_two_points hdg hdl2 hdl'' hgl' hgl''
+        subst this
+        have ⟨l''', ⟨hal''', hbl''', hcl'''⟩ ⟩ := hcol
+        have : l2 = l''' := by
+          apply line_eq_of_two_points hbc hbl'' hbl''' hcl' hcl'''
+        subst this
+        apply hacd
+        use l2
 
       have hage: ¬ Collinear a g e := by
-        sorry
+        intro hage
+        have hade: Collinear a d e := by use l1
+        rw [collinear_comm_right_iff] at hage hade
+        have hadg:= collinear_trans hae hade hage
+        have hbdg := collinear_of_between hg
+        rw [collinear_comm_rotate_iff] at hbdg hadg
+        have hdab := collinear_trans hdg hadg hbdg
+        rw [collinear_comm_rotate_iff] at hdab
+        have habd := collinear_trans hab hdab hcol
+        apply hacd
+        rw [collinear_comm_right_iff]
+        exact habd
 
       rw [between_symm_iff] at hf1
 
       let ⟨d', ⟨hd'1, hd'2⟩⟩ := G.pasch_axiom hage hal2 hgl2 hel2 (by use f)
 
+      have heg: e ≠ g := by
+        apply (between_ne he1).select' 1 0
+        all_goals norm_num
+
+      have hcd': c ≠ d' := by
+        intro he
+        subst he
+        have hgce := between_not_symm_right he1
+        simp only [hgce, false_or] at hd'1
+        have hace := collinear_of_between hd'1
+        have haed : Collinear a e d := by use l1
+        rw [collinear_comm_right_iff] at hace
+        apply hacd
+        apply collinear_trans hae hace haed
+
+      have hfg: f ≠ g := by
+        apply (between_ne hf1).select' 1 2
+        all_goals norm_num
+
+      have: ¬ Between g d' e := by
+        intro hd'e
+        have hd'e := collinear_of_between hd'e
+        have hgce := collinear_of_between he1
+        rw [collinear_comm_right_iff] at hd'e
+        have hgcd' := collinear_trans (Ne.symm heg) hgce hd'e
+        have hcd'f : Collinear c d' f := by use l2
+        rw [collinear_comm_rotate_iff] at hgcd'
+        have hcfg := collinear_trans hcd' hcd'f hgcd'
+        have hafg := collinear_of_between hf1
+        rw [collinear_comm_cross_iff] at hcfg hafg
+        have hgac := collinear_trans (Ne.symm hfg) hcfg hafg
+        rw [collinear_comm_right_iff] at hgce
+        have hgae := collinear_trans (Ne.symm hcg) hgac hgce
+        apply hage
+        rw [collinear_comm_left_iff]
+        exact hgae
+
+      simp only [this, false_or] at hd'1
+
+      have hl1l2: l1 ≠ l2 := by
+        intro he
+        subst he
+        contradiction
 
       have : d = d' := by
-        sorry
+        have hd'3: d' ∈ l1 := by
+          apply on_line_of_collinear hae _ hal1 he2
+          rw [collinear_comm_right_iff]
+          exact collinear_of_between hd'1
+        apply common_point_of_lines hl1l2 hdl1 hdl2 hd'3 hd'2
 
       subst this
 
-      have: ¬ Between g d e := by
-        sorry
-      simp only [this, false_or] at hd'1
-
       have haec: ¬ Collinear a e c := by
-        sorry
+        intro haec
+        have haed: Collinear a e d := by use l1
+        apply hacd
+        exact collinear_trans hae haec haed
 
       -- l3 = line BD
       let ⟨l3, ⟨hbl3,hdl3⟩ ⟩ := mk_line hbd
 
       have hal3: a ∉ l3 := by
-        sorry
-
-      have hel3: e ∉ l3 := by
-        sorry
+        intro hal3
+        have habd: Collinear a b d := by use l3
+        apply hacd
+        apply collinear_trans hab hcol habd
 
       have hcl3: c ∉ l3 := by
-        sorry
+        intro hcl3
+        have hcbd: Collinear c b d := by use l3
+        apply hacd
+        rw [collinear_comm_left_iff]
+        apply collinear_trans (Ne.symm hbc)
+        . rw [collinear_comm_cross_iff]
+          exact hcol
+        . exact hcbd
+
+      have hel3: e ∉ l3 := by
+        intro hel3
+        have : l1 = l3 := by
+          apply line_eq_of_two_points hde hdl1 hdl3 he2 hel3
+        subst this
+        contradiction
 
       let ⟨b', ⟨hb'1, hb'2⟩⟩ := G.pasch_axiom haec hal3 hel3 hcl3 (by use d)
 
+      have : ¬ Between e b' c := by
+        intro heb'c
+        have : g = b' := by
+          have ⟨l', hgl', hel', hcl'⟩ := collinear_of_between he1
+          have hb'l': b' ∈ l' := by
+            apply on_line_of_collinear hec _ hel' hcl'
+            rw [collinear_comm_right_iff]
+            apply collinear_of_between heb'c
+          have hgl3: g ∈ l3 := by
+            apply on_line_of_collinear hbd _ hbl3 hdl3
+            apply collinear_of_between hg
+          have hne: l' ≠ l3 := by
+            intro he
+            subst he
+            contradiction
+          apply common_point_of_lines hne hgl' hgl3 hb'l' hb'2
+
+        subst this
+        rw [between_symm_iff] at he1 heb'c
+        have h := between_not_symm_right he1
+        apply h heb'c
+
+      simp only [this, false_or] at hb'1
+
       have : b = b' := by
-        sorry
+        have ⟨l', ha', hb', hc'⟩ := hcol
+
+        have hb'3: b' ∈ l' := by
+          apply on_line_of_collinear hac
+          rw [collinear_comm_right_iff]
+          apply collinear_of_between hb'1
+          exact ha'
+          exact hc'
+
+        have hl'l3: l' ≠ l3 := by
+          intro he
+          subst he
+          contradiction
+
+        apply common_point_of_lines hl'l3 hb' hbl3 hb'3 hb'2
+
       subst this
 
-      have : ¬ Between e b c := by
-        sorry
-      simp only [this, false_or] at hb'1
       exact hb'1
 
 

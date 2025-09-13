@@ -42,6 +42,10 @@ namespace Geometry
 
     variable {Point: Type}[G:LineConnection Point]
 
+    @[grind]
+    theorem collinear_of_between{a b c: Point}: G.Between a b c → Collinear a b c :=
+      G.collinear_of_between
+
     theorem in_mk_line_iff_collinear{a b c : Point}(hne: a ≠ c):
       Collinear a b c ↔ b ∈ (mk_line hne).val :=
     by
@@ -62,10 +66,11 @@ namespace Geometry
 
     /-- Theorem 1.1. Two straight lines of a plane have either one point or no point in
       common -/
-    theorem common_point_of_lines{l1 l2: G.Line}(h: l1 ≠ l2):
-        ∀ p1 p2: Point, p1 ∈ l1 → p1 ∈ l2 → p2 ∈ l1 → p2 ∈ l2 → p1 = p2 :=
+    @[grind]
+    theorem common_point_of_lines{l1 l2: G.Line}(h: l1 ≠ l2){p1 p2: Point}:
+        p1 ∈ l1 → p1 ∈ l2 → p2 ∈ l1 → p2 ∈ l2 → p1 = p2 :=
     by
-      intro p1 p2 hp1l1 hp1l2 hp2l1 hp2l2
+      intro hp1l1 hp1l2 hp2l1 hp2l2
       by_contra hne
       have t1:= G.unique_line_from_two_points hne hp1l1 hp2l1
       have t2:= G.unique_line_from_two_points hne hp1l2 hp2l2
@@ -84,6 +89,7 @@ namespace Geometry
       apply Eq.symm
       exact G.unique_line_from_two_points hbc hb hc
 
+    @[grind]
     theorem line_eq_of_two_points{a b : Point}{l1 l2: G.Line}:
       a≠b → a∈ l1 → a ∈ l2 → b ∈ l1 → b ∈ l2 → l1=l2 :=
     by
@@ -116,6 +122,7 @@ namespace Geometry
         use l
         simp only [l.property, true_and]
 
+    @[grind]
     theorem ne_of_not_collinear[H: LineConnectionHelper Point]{a b c: Point}:
       ¬Collinear a b c → a ≠ b :=
     by
@@ -124,16 +131,29 @@ namespace Geometry
       apply h1
       apply collinear_of_eq
 
+    @[grind]
     theorem collinear_comm_cross{a b c: Point}: Collinear a b c → Collinear c b a := by
       intro ⟨l, hl⟩
       use l
       simp only [hl, and_self]
 
+    theorem collinear_comm_cross_iff{a b c: Point}: Collinear a b c ↔ Collinear c b a := by
+      constructor
+      . apply collinear_comm_cross
+      . apply collinear_comm_cross
+
+    @[grind]
     theorem collinear_comm_left{a b c: Point}: Collinear a b c → Collinear b a c := by
       intro ⟨l, hl⟩
       use l
       simp only [hl, and_self]
 
+    theorem collinear_comm_left_iff{a b c: Point}: Collinear a b c ↔ Collinear b a c := by
+      constructor
+      . apply collinear_comm_left
+      . apply collinear_comm_left
+
+    @[grind]
     theorem collinear_comm_right{a b c: Point}: Collinear a b c → Collinear a c b := by
       intro ⟨l, hl⟩
       use l
@@ -144,16 +164,24 @@ namespace Geometry
       . apply collinear_comm_right
       . apply collinear_comm_right
 
+    @[grind]
     theorem collinear_comm_rotate{a b c: Point}: Collinear a b c → Collinear b c a := by
       intro ⟨l, hl⟩
       use l
       simp only [hl, and_self]
 
+    @[grind]
     theorem collinear_comm_rotate'{a b c: Point}: Collinear a b c → Collinear c a b := by
       intro ⟨l, hl⟩
       use l
       simp only [hl, and_self]
 
+    theorem collinear_comm_rotate_iff{a b c: Point}: Collinear a b c ↔ Collinear b c a := by
+      constructor
+      . apply collinear_comm_rotate
+      . apply collinear_comm_rotate'
+
+    @[grind]
     theorem collinear_comp{a b c d: Point}(hne: a≠b): Collinear a b c → Collinear a b d → Collinear a c d := by
       intro h1 h2
       rcases h1 with ⟨l1, ha1, hb1, hc1⟩
@@ -166,6 +194,7 @@ namespace Geometry
       -- 于是 a,c,d 都在同一条直线上
       exact ⟨l1, ha2, hc1, hd2⟩
 
+    @[grind]
     theorem collinear_trans{a b c d : Point}: a ≠ b →  Collinear a b c → Collinear a b d → Collinear a c d := by
       intro hab ⟨l1, ⟨ha1, hb1, hc1⟩ ⟩ ⟨l2, ⟨ha2, hb2, hd2⟩⟩
       have : l1 = l2 := by
@@ -173,7 +202,7 @@ namespace Geometry
       rw [← this] at hd2
       use l1
 
-    theorem not_collinear_of_nin{a b c: Point}{l: G.Line}:
+    theorem on_line_of_collinear{a b c: Point}{l: G.Line}:
       a≠b → Collinear a b c → a∈l → b∈l → c∈l :=
     by
       intro hne hcol ha hb
