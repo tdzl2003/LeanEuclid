@@ -82,6 +82,6 @@ namespace Geometry
       iseqv := ⟨equiv_refl, equiv_symm, equiv_trans⟩
   end RayRaw
 
-  def Ray{Point}[G: LineConnWithPointOrderExt Point] := Quotient (RayRaw.setoid Point)
+  def Ray(Point)[G: LineConnWithPointOrderExt Point] := Quotient (RayRaw.setoid Point)
 
 end Geometry

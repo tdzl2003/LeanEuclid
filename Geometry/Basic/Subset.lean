@@ -3,4 +3,11 @@ namespace Geometry
     ∀ p: Point, p ∈ S → p ∈ T
 
   scoped infix:99 "⊆" => IsSubset
+
+  class Cong(α: Type) where
+    cong(a b: α): Prop
+    instEquivalence: Equivalence cong
+
+  scoped infix:99 "≅" => Cong.cong
+
 end Geometry
